@@ -58,6 +58,26 @@ class Walk extends Shape {
             14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
     }
 }
+
+class Trapezoid extends Shape {
+    constructor() {
+        super("position", "normal",);
+        // Loop 3 times (for each axis), and inside loop twice (for opposing cube sides):
+        this.arrays.position = Vector3.cast(
+            [-2, -1, -.1], [2, -1, -.1], [-2, -1, .1], [2, -1, .1], [1, 1, -.1], [-1, 1, -.1], [1, 1, .1], [-1, 1, .1],
+            [-2, -1, -.1], [-2, -1, .1], [-1, 1, -.1], [-1, 1, .1], [2, -1, .1], [2, -1, -.1], [1, 1, .1], [1, 1, -.1],
+            [-2, -1, .1], [2, -1, .1], [-1, 1, .1], [1, 1, .1], [2, -1, -.1], [-2, -1, -.1], [1, 1, -.1], [-1, 1, -.1]);
+        this.arrays.normal = Vector3.cast(
+            [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0],
+            [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0],
+            [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1]);
+        // Arrange the vertices into a trap shape in texture space too:
+        this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
+            14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
+    }
+}
+
+
 class Cube_Outline extends Shape {
     constructor() {
         super("position", "color");
@@ -91,6 +111,7 @@ class Base_Scene extends Scene {
             'outline': new Cube_Outline(),
             'rectangle': new Rectangle(),
             'walkway': new Walk(),
+            'trapezoid': new Trapezoid(),
 
         };
 
@@ -109,7 +130,7 @@ class Base_Scene extends Scene {
 
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if (!context.scratchpad.controls) {
-            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+            //this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
             program_state.set_camera(Mat4.translation(5, -10, -30));
         }
@@ -117,7 +138,7 @@ class Base_Scene extends Scene {
             Math.PI / 4, context.width / context.height, 1, 100);
 
         // *** Lights: *** Values of vector or point lights.
-        const light_position = vec4(0, 5, 5, 1);
+        const light_position = vec4(5, 30, 20, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
     }
 }
@@ -165,13 +186,13 @@ export class Assignment2 extends Base_Scene {
         //SKY
         let sky_transform = Mat4.identity();
         const blue = hex_color("#1a9ffa");
-        let sky_Tr = Mat4.translation(-4,20,0,1);
-        let sky_Sc = Mat4.scale(5,15,0,1);
+        let sky_Tr = Mat4.translation(-4,20,-4,1);
+        let sky_Sc = Mat4.scale(5,15,1,1);
         let sky_Rt = Mat4.rotation(Math.PI/2, 0, 0, 1);
         sky_transform = sky_transform.times(sky_Tr).times(sky_Rt).times(sky_Sc);
         this.shapes.rectangle.draw(context, program_state, sky_transform, this.materials.plastic.override({color: blue}));
 
-        // //BUSHES
+        //BUSHES
         let bush1_transform = Mat4.identity();
         let bush1_Tr = Mat4.translation(-17,-8.5,1,1);
         let bush1_Rt = Mat4.rotation(-Math.PI/3.9,0,0,1);
@@ -185,6 +206,16 @@ export class Assignment2 extends Base_Scene {
         let bush2_transform = Mat4.identity();
         bush2_transform = bush2_transform.times(bush2_Rt).times(bush2_Tr).times(bush2_Sc);
         this.shapes.rectangle.draw(context, program_state, bush2_transform, this.materials.plastic.override( {color: hex_color("#0a4915")}));
+
+
+        //ACKERMAN
+        let ack_trans = Mat4.identity();
+        let ack_Sc = Mat4.scale(10,8,1,1);
+        let ack_Tr = Mat4.translation(16,11,-.1,1);
+        let ack_Rt = Mat4.rotation(Math.PI/2,0,0,1);
+        ack_trans = ack_trans.times(ack_Tr).times(ack_Sc).times(ack_Rt);
+            //TODO: should stripe the colors w/ red so it actually looks like Ackerman
+        this.shapes.trapezoid.draw(context, program_state, ack_trans, this.materials.plastic.override( {color: hex_color("#e0d7b2")}));
 
     }
 
