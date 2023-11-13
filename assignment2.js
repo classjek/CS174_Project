@@ -112,8 +112,12 @@ class Base_Scene extends Scene {
             'rectangle': new Rectangle(),
             'walkway': new Walk(),
             'trapezoid': new Trapezoid(),
+            'cylinder': new defs.Cylindrical_Tube(10,10),
+            'triangle': new defs.Triangle(),
 
         };
+
+        //TODO: add materials so its not all plastic-y
 
         // *** Materials
         this.materials = {
@@ -130,7 +134,7 @@ class Base_Scene extends Scene {
 
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if (!context.scratchpad.controls) {
-            //this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
             program_state.set_camera(Mat4.translation(5, -10, -30));
         }
@@ -176,7 +180,61 @@ export class Assignment2 extends Base_Scene {
         return model_transform;
     }
 
+    draw_tree(context, program_state, tree_translation) {
+        //pass in the location that you want a tree in
+
+        let trunk_trans = Mat4.identity();
+        let trunk_Sc = Mat4.scale(1,1,15,1);
+        let trunk_Rt = Mat4.rotation(Math.PI/2,5,0,0);
+        trunk_trans = trunk_trans.times(tree_translation).times(trunk_Rt).times(trunk_Sc);
+        this.shapes.cylinder.draw(context, program_state, trunk_trans, this.materials.plastic.override( {color: hex_color("#845f33")}));
+
+        //BASE LEAF TRANSFORMATION
+        let leaves_trans = Mat4.identity();
+        let leaves_Sc = Mat4.scale(2,3,2,1);
+        let leaves_Tr = Mat4.translation(1,-2.5,0,1);
+        leaves_trans = leaves_trans.times(leaves_Tr).times(tree_translation).times(leaves_Sc);
+
+            //FIRST LEAF
+            let leaves_Tr1 = Mat4.translation(-.5,0,.5);  //x is outfrom the trunk
+                                                        //y is up above the trunk
+                                                        //z is parallel to the current but away from trunk
+            let leaves_Sc1 = Mat4.rotation(Math.PI,1,0,1).times(Mat4.scale(1,-1,1));
+            let leaf1 = leaves_trans.times(leaves_Tr1).times(leaves_Sc1);
+
+            //SECOND LEAF
+            let leaves_Tr2 = Mat4.translation(-.5,0,-.5);
+            let leaves_Sc2 = Mat4.rotation(Math.PI,1,0,1).times(Mat4.scale(-1,-1,1));
+            let leaf2 = leaves_trans.times(leaves_Tr2).times(leaves_Sc2);
+
+
+            //THIRD LEAF
+            let leaves_Tr3 = Mat4.translation(-1,0,0);
+            let leaves_Sc3 = Mat4.scale(-1,1,1);        //mirror on x axis
+            let leaf3 = leaves_trans.times(leaves_Tr3).times(leaves_Sc3);
+        
+        
+
+
+        for (var i = 0; i < 5; i++) {
+            this.shapes.triangle.draw(context, program_state, leaves_trans, this.materials.plastic.override( {color: hex_color("#00ff00")}));
+            this.shapes.triangle.draw(context, program_state, leaf1, this.materials.plastic.override( {color: hex_color("#00ff00")}));
+            this.shapes.triangle.draw(context, program_state, leaf2, this.materials.plastic.override( {color: hex_color("#00ff00")}));
+            this.shapes.triangle.draw(context, program_state, leaf3, this.materials.plastic.override( {color: hex_color("#00ff00")}));
+
+            let leaves_manyTr = Mat4.translation(0,.6,0);
+            leaf2 = leaf2.times(leaves_manyTr);
+            leaves_trans = leaves_trans.times(leaves_manyTr);
+            leaf1 = leaf1.times(leaves_manyTr);
+            leaf3 = leaf3.times(leaves_manyTr);
+
+        }
+        
+    }
+
     draw_walkway(context, program_state, walkway_transform)  {
+        //THIS DRAWS A STATIC WALKWAY
+
         const gray = hex_color("#bebebe");
         let w_Sc = Mat4.scale(8,3,0,1);
         let w_Tr = Mat4.translation(-4,0,0,1);
@@ -194,13 +252,13 @@ export class Assignment2 extends Base_Scene {
 
         //BUSHES
         let bush1_transform = Mat4.identity();
-        let bush1_Tr = Mat4.translation(-17,-8.5,1,1);
+        let bush1_Tr = Mat4.translation(-17,-8.5,3,1);
         let bush1_Rt = Mat4.rotation(-Math.PI/3.9,0,0,1);
         let bush1_Sc = Mat4.scale(.8,6.5,1,1)
         bush1_transform = bush1_transform.times(bush1_Rt).times(bush1_Tr).times(bush1_Sc);
         this.shapes.rectangle.draw(context, program_state, bush1_transform, this.materials.plastic.override( {color: hex_color("#0a4915")}));
 
-        let bush2_Tr = Mat4.translation(11, -2, 1, 1);
+        let bush2_Tr = Mat4.translation(11, -2, 3, 1);
         let bush2_Rt = Mat4.rotation(Math.PI/3.9,0,0,1);
         let bush2_Sc = bush1_Sc;
         let bush2_transform = Mat4.identity();
@@ -222,11 +280,16 @@ export class Assignment2 extends Base_Scene {
 
     display(context, program_state) {
         super.display(context, program_state);
-        let model_transform = Mat4.identity();
 
         let walkway_transform = Mat4.identity();
-        let sky_transform = Mat4.identity();
+        let temp_tree_trans = Mat4.translation(12,12,2,1);
+        let temp_tree_2 = Mat4.translation(-21, 12, 2,1);
+        this.draw_tree(context, program_state, temp_tree_2);
+        this.draw_tree(context, program_state, temp_tree_trans);
 
-        this.draw_walkway(context, program_state, walkway_transform);
+        
+
+
+       this.draw_walkway(context, program_state, walkway_transform);
     }
 }
