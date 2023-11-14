@@ -147,7 +147,12 @@ class Base_Scene extends Scene {
 
         };
 
-        //TODO: add materials so its not all plastic-y
+        // Bounding Box for Person ->  use later for collisions
+        // need to write updateBoundingBox function and call it inside draw_person
+        this.personBoundingBox = {
+            min: { x: 0, y: 0, z: 0 },
+            max: { x: 0, y: 0, z: 0 }
+        };
 
         // *** Materials
         this.materials = {
@@ -306,6 +311,7 @@ export class Assignment2 extends Base_Scene {
     draw_person(context, program_state, model_transform = Mat4.identity()) {
         // Draws a person at the origin, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
+
         const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a");
 
         let person = {
@@ -372,9 +378,7 @@ export class Assignment2 extends Base_Scene {
         this.draw_tree(context, program_state, temp_tree_2);
         this.draw_tree(context, program_state, temp_tree_trans);
 
-        //this.draw_person(context, program_state, Mat4.translation(0, 10, 5));
         this.draw_person(context, program_state, this.person_transform);
-
 
        this.draw_walkway(context, program_state, walkway_transform);
     }
