@@ -105,6 +105,36 @@ class Base_Scene extends Scene {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
         this.hover = this.swarm = false;
+
+        // Initialize person translation here so position isn't continuously reset 
+        this.person_transform = Mat4.translation(0, 10, 5);
+
+        // for jumping mechanic
+        this.isJumping = false;
+        this.jumpHeight = 0; 
+
+        // for lateral movement
+        this.moveLeft = false;
+        this.moveRight = false; 
+
+        // Event listeners for lateral movement
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'e'){
+                this.moveRight = true;
+            }
+            if (event.key === 'q'){
+                this.moveLeft = true; 
+            }
+        })
+        document.addEventListener('keyup', (event)=> {
+            if (event.key === 'e'){
+                this.moveRight = false;
+            }
+            if (event.key === 'q'){
+                this.moveLeft = false; 
+            }
+        })
+
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             'cube': new Cube(),
@@ -170,6 +200,22 @@ export class Assignment2 extends Base_Scene {
         this.key_triggered_button("Sit still", ["m"], () => {
             // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
         });
+        this.key_triggered_button("jump", ["j"], () => {
+            // Person jumps
+            if (!this.isJumping){
+                this.isJumping = true; 
+            }
+        });
+        this.key_triggered_button("Left", ["q"], () => {
+            if(!this.moveLeft){
+                this.moveLeft = true;
+            }
+        })
+        this.key_triggered_button("Right", ["e"], () => {
+            if(!this.moveRight){
+                this.moveRight = true; 
+            }
+        })
     }
 
     draw_box(context, program_state, model_transform) {
@@ -296,6 +342,31 @@ export class Assignment2 extends Base_Scene {
             person[matrix] = person[matrix].times(model_transform); 
         }
 
+        // Jumping 
+        if (this.isJumping){
+            this.jumpHeight += 1; 
+            // reached max jump height-> reset jump flag and height, later make it so the person falls back down
+            if (this.jumpHeight > 30){
+                this.isJumping = false; 
+                this.jumpHeight = 0;
+            }
+        }
+        // Apply jumping translation
+        // change this so it just changes this.person_transform -> less computationally expensive
+        for (let matrix in person){
+            person[matrix] = person[matrix].times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
+        }
+
+        // Left/Right Movement
+        // Once course is done, add bounds so character can't move off the course/offscreen
+        // decide if we want the camera to follow the character or not
+        if(this.moveRight){
+            this.person_transform = this.person_transform.times(Mat4.translation(0.5, 0, 0));
+        }
+        if(this.moveLeft){
+            this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
+        }
+
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
         person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
         person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
@@ -321,7 +392,8 @@ export class Assignment2 extends Base_Scene {
         this.draw_tree(context, program_state, temp_tree_2);
         this.draw_tree(context, program_state, temp_tree_trans);
 
-        this.draw_person(context, program_state, Mat4.translation(0, 10, 5));
+        //this.draw_person(context, program_state, Mat4.translation(0, 10, 5));
+        this.draw_person(context, program_state, this.person_transform);
 
 
        this.draw_walkway(context, program_state, walkway_transform);
