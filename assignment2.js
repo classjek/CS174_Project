@@ -277,6 +277,40 @@ export class Assignment2 extends Base_Scene {
 
     }
 
+    draw_person(context, program_state, model_transform = Mat4.identity()) {
+        // Draws a person at the origin, just a rough draft version
+        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
+        const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a");
+
+        let person = {
+            head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
+            torso_transform: Mat4.identity().times(Mat4.translation(0,-2.5,0)),
+            arms_transformL: Mat4.identity().times(Mat4.translation(-1.5, -3, 0)),
+            arms_transformR: Mat4.identity().times(Mat4.translation(1.5, -3, 0)),
+            legs_transformL: Mat4.identity().times(Mat4.translation(-.5, -6.25, 0)),
+            legs_transformR: Mat4.identity().times(Mat4.translation(.5, -6.25, 0))
+        }
+
+        // Use custom transform_matrix to modify entire person at once
+        for (let matrix in person) { 
+            person[matrix] = person[matrix].times(model_transform); 
+        }
+
+        person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
+        person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
+        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
+        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
+        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
+        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
+
+        // Drawing the body
+        this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(yellow));
+        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(blue));
+        this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(yellow));
+        this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(yellow));
+        this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(yellow));
+        this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(yellow));
+    }
 
     display(context, program_state) {
         super.display(context, program_state);
@@ -287,7 +321,7 @@ export class Assignment2 extends Base_Scene {
         this.draw_tree(context, program_state, temp_tree_2);
         this.draw_tree(context, program_state, temp_tree_trans);
 
-        
+        this.draw_person(context, program_state, Mat4.translation(0, 10, 5));
 
 
        this.draw_walkway(context, program_state, walkway_transform);
