@@ -229,51 +229,31 @@ export class Assignment2 extends Base_Scene {
     draw_tree(context, program_state, tree_translation) {
         //pass in the location that you want a tree in
 
-        let trunk_trans = Mat4.identity();
-        let trunk_Sc = Mat4.scale(1,1,15,1);
-        let trunk_Rt = Mat4.rotation(Math.PI/2,5,0,0);
-        trunk_trans = trunk_trans.times(tree_translation).times(trunk_Rt).times(trunk_Sc);
-        this.shapes.cylinder.draw(context, program_state, trunk_trans, this.materials.plastic.override( {color: hex_color("#845f33")}));
+        const trunk_color = hex_color("#845f33");
+        const leaf_color = hex_color("#00ff00");
 
-        //BASE LEAF TRANSFORMATION
-        let leaves_trans = Mat4.identity();
-        let leaves_Sc = Mat4.scale(2,3,2,1);
-        let leaves_Tr = Mat4.translation(1,-2.5,0,1);
-        leaves_trans = leaves_trans.times(leaves_Tr).times(tree_translation).times(leaves_Sc);
+        let tree = {
+            trunk: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(1,1,15,1)),
+            leaf1: Mat4.translation(1,-2.5,0,1).times( Mat4.scale(2,3,2,1)) ,
+            leaf2: Mat4.translation(0,-2.5,1).times(Mat4.rotation(Math.PI,1,0,1)).times(Mat4.scale(1,-1,1)).times(Mat4.scale(2,3,2,1)),
+            leaf3: Mat4.translation(0,-2.5,-1).times(Mat4.rotation(Math.PI,1,0,1)).times(Mat4.scale(-1,-1,1)).times(Mat4.scale(2,3,2,1)),
+            leaf4: Mat4.translation(-1,-2.5,0).times(Mat4.scale(-1,1,1)).times(Mat4.scale(2,3,2,1)),
+        }
 
-            //FIRST LEAF
-            let leaves_Tr1 = Mat4.translation(-.5,0,.5);  //x is outfrom the trunk
-                                                        //y is up above the trunk
-                                                        //z is parallel to the current but away from trunk
-            let leaves_Sc1 = Mat4.rotation(Math.PI,1,0,1).times(Mat4.scale(1,-1,1));
-            let leaf1 = leaves_trans.times(leaves_Tr1).times(leaves_Sc1);
+        this.shapes.cylinder.draw(context, program_state, tree_translation.times(tree.trunk), this.materials.plastic.override( {color: trunk_color}));
 
-            //SECOND LEAF
-            let leaves_Tr2 = Mat4.translation(-.5,0,-.5);
-            let leaves_Sc2 = Mat4.rotation(Math.PI,1,0,1).times(Mat4.scale(-1,-1,1));
-            let leaf2 = leaves_trans.times(leaves_Tr2).times(leaves_Sc2);
-
-
-            //THIRD LEAF
-            let leaves_Tr3 = Mat4.translation(-1,0,0);
-            let leaves_Sc3 = Mat4.scale(-1,1,1);        //mirror on x axis
-            let leaf3 = leaves_trans.times(leaves_Tr3).times(leaves_Sc3);
         
-        
-
-
         for (var i = 0; i < 5; i++) {
-            this.shapes.triangle.draw(context, program_state, leaves_trans, this.materials.plastic.override( {color: hex_color("#00ff00")}));
-            this.shapes.triangle.draw(context, program_state, leaf1, this.materials.plastic.override( {color: hex_color("#00ff00")}));
-            this.shapes.triangle.draw(context, program_state, leaf2, this.materials.plastic.override( {color: hex_color("#00ff00")}));
-            this.shapes.triangle.draw(context, program_state, leaf3, this.materials.plastic.override( {color: hex_color("#00ff00")}));
+            this.shapes.triangle.draw(context, program_state, tree_translation.times(tree.leaf1), this.materials.plastic.override( {color: leaf_color}));
+            this.shapes.triangle.draw(context, program_state, tree_translation.times(tree.leaf2), this.materials.plastic.override( {color: leaf_color}));
+            this.shapes.triangle.draw(context, program_state, tree_translation.times(tree.leaf3), this.materials.plastic.override( {color: leaf_color}));
+            this.shapes.triangle.draw(context, program_state, tree_translation.times(tree.leaf4), this.materials.plastic.override( {color: leaf_color}));
 
             let leaves_manyTr = Mat4.translation(0,.6,0);
-            leaf2 = leaf2.times(leaves_manyTr);
-            leaves_trans = leaves_trans.times(leaves_manyTr);
-            leaf1 = leaf1.times(leaves_manyTr);
-            leaf3 = leaf3.times(leaves_manyTr);
-
+            tree.leaf1= tree.leaf1.times(leaves_manyTr);
+            tree.leaf2 = tree.leaf2.times(leaves_manyTr);
+            tree.leaf3 = tree.leaf3.times(leaves_manyTr);
+            tree.leaf4 = tree.leaf4.times(leaves_manyTr);
         }
         
     }
