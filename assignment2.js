@@ -384,5 +384,7 @@ export class Assignment2 extends Base_Scene {
         this.draw_person(context, program_state, this.person_transform);
 
        this.draw_walkway(context, program_state, walkway_transform);
+       let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
+       program_state.set_camera(desired);
     }
 }
