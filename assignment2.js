@@ -119,18 +119,18 @@ class Base_Scene extends Scene {
 
         // Event listeners for lateral movement
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'e'){
+            if (event.key === 'd'){
                 this.moveRight = true;
             }
-            if (event.key === 'q'){
+            if (event.key === 'a'){
                 this.moveLeft = true; 
             }
         })
         document.addEventListener('keyup', (event)=> {
-            if (event.key === 'e'){
+            if (event.key === 'd'){
                 this.moveRight = false;
             }
-            if (event.key === 'q'){
+            if (event.key === 'a'){
                 this.moveLeft = false; 
             }
         })
@@ -205,18 +205,18 @@ export class Assignment2 extends Base_Scene {
         this.key_triggered_button("Sit still", ["m"], () => {
             // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
         });
-        this.key_triggered_button("jump", ["j"], () => {
+        this.key_triggered_button("jump", [" "], () => {
             // Person jumps
             if (!this.isJumping){
                 this.isJumping = true; 
             }
         });
-        this.key_triggered_button("Left", ["q"], () => {
+        this.key_triggered_button("Left", ["a"], () => {
             if(!this.moveLeft){
                 this.moveLeft = true;
             }
         })
-        this.key_triggered_button("Right", ["e"], () => {
+        this.key_triggered_button("Right", ["d"], () => {
             if(!this.moveRight){
                 this.moveRight = true; 
             }
@@ -322,13 +322,6 @@ export class Assignment2 extends Base_Scene {
             }
             model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
         }
-        // Apply jumping translation
-        // change this so it just changes this.person_transform -> less computationally expensive
-        // for (let matrix in person){
-        //     //person[matrix] = person[matrix].times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
-        //     model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
-        // }
-    
 
         const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a");
 
