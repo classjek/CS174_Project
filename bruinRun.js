@@ -219,14 +219,6 @@ export class BruinRun extends Base_Scene {
         })
     }
 
-    draw_box(context, program_state, model_transform) {
-        // TODO:  Helper function for requirement 3 (see hint).
-        //        This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
-        // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
-
-        return model_transform;
-    }
-
     draw_tree(context, program_state, tree_translation) {
         //pass in the location that you want a tree in
 
@@ -257,6 +249,33 @@ export class BruinRun extends Base_Scene {
             tree.leaf4 = tree.leaf4.times(leaves_manyTr);
         }
         
+    }
+
+    draw_bench(context, program_state, bench_transform) {
+        //BENCH_TRANSFORM = WHERE YOU WANT THE BENCH
+        const bench_color = hex_color("#38424c");
+        //const bench_color = hex_color("#ff0000")
+
+        let bench = {
+            table: Mat4.translation(-.2,1,0).times(Mat4.scale(1.6,.1,1.8)),
+            pole1: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.2,.2,2,1)),
+            pole2: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.2,.2,2,1)).times(Mat4.translation(-3,3,0)),
+
+            seat_back: Mat4.translation(-3.6,1,0).times(Mat4.rotation(Math.PI/10,-1,0,5)).times(Mat4.scale(.1,1,2)),
+            seat_bottom: Mat4.translation(-2.5,0,0).times(Mat4.rotation(Math.PI/2, 0,0,1)).times(Mat4.scale(.1,1,2)),
+            seat_pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.2,.2,.5,1)).times(Mat4.translation(-12,0,1)),
+
+        }
+
+        this.shapes.cylinder.draw(context, program_state, bench_transform.times(bench.pole1), this.materials.plastic.override({ color: bench_color}))
+        this.shapes.cylinder.draw(context, program_state, bench_transform.times(bench.pole2), this.materials.plastic.override({ color: bench_color}))
+        this.shapes.cube.draw(context, program_state, bench_transform.times(bench.table), this.materials.plastic.override( {color: bench_color}))
+
+        this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_back), this.materials.plastic.override( {color: bench_color}))
+        this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_bottom), this.materials.plastic.override( {color: bench_color}))
+        this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_pole), this.materials.plastic.override( {color: bench_color}))
+
+
     }
 
     draw_walkway(context, program_state, walkway_transform)  {
@@ -367,10 +386,12 @@ export class BruinRun extends Base_Scene {
         let walkway_transform = Mat4.identity();
         let temp_tree_trans = Mat4.translation(12,12,2,1);
         let temp_tree_2 = Mat4.translation(-21, 12, 2,1);
+        let temp_bench_location = Mat4.translation(-14,4,5);
         this.draw_tree(context, program_state, temp_tree_2);
         this.draw_tree(context, program_state, temp_tree_trans);
 
         this.draw_person(context, program_state, this.person_transform);
+        this.draw_bench(context, program_state, temp_bench_location);
 
        this.draw_walkway(context, program_state, walkway_transform);
     //    let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
