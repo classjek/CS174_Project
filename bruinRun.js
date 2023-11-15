@@ -78,24 +78,6 @@ class Trapezoid extends Shape {
 }
 
 
-class Cube_Outline extends Shape {
-    constructor() {
-        super("position", "color");
-        //  TODO (Requirement 5).
-        // When a set of lines is used in graphics, you should think of the list entries as
-        // broken down into pairs; each pair of vertices will be drawn as a line segment.
-        // Note: since the outline is rendered with Basic_shader, you need to redefine the position and color of each vertex
-    }
-}
-
-class Cube_Single_Strip extends Shape {
-    constructor() {
-        super("position", "normal");
-        // TODO (Requirement 6)
-    }
-}
-
-
 class Base_Scene extends Scene {
     /**
      *  **Base_scene** is a Scene that can be added to any display canvas.
@@ -138,12 +120,13 @@ class Base_Scene extends Scene {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             'cube': new Cube(),
-            'outline': new Cube_Outline(),
             'rectangle': new Rectangle(),
             'walkway': new Walk(),
             'trapezoid': new Trapezoid(),
             'cylinder': new defs.Cylindrical_Tube(10,10),
             'triangle': new defs.Triangle(),
+            'sphere': new defs.Subdivision_Sphere(4),
+            'cone': new defs.Rounded_Closed_Cone(20,20)
 
         };
 
@@ -189,18 +172,10 @@ export class BruinRun extends Base_Scene {
      * This gives you a very small code sandbox for editing a simple scene, and for
      * experimenting with matrix transformations.
      */
-    set_colors() {
-        // TODO:  Create a class member variable to store your cube's colors.
-        // Hint:  You might need to create a member variable at somewhere to store the colors, using `this`.
-        // Hint2: You can consider add a constructor for class Assignment2, or add member variables in Base_Scene's constructor.
-    }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
 
-        this.key_triggered_button("Sit still", ["m"], () => {
-            // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
-        });
         this.key_triggered_button("jump", [" "], () => {
             // Person jumps
             if (!this.isJumping){
@@ -249,6 +224,27 @@ export class BruinRun extends Base_Scene {
             tree.leaf4 = tree.leaf4.times(leaves_manyTr);
         }
         
+    }
+
+    draw_lightpost(context, program_state, lightpost_transform) {
+        const pole_color = hex_color("#30404f");
+        const light_color = hex_color("#eae9a9");
+        const banner_color = hex_color("#0058eb");
+        const temp_color = hex_color("#ff00f0")
+        
+        let lightpost = {
+            pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.4,.4,10,1)),
+            light: Mat4.translation(0,5,0).times(Mat4.rotation(Math.PI,0,-1,1)).times(Mat4.scale(1.2,1.3,1.5)),
+            banner1: Mat4.translation(1.7,2,0).times(Mat4.scale(1.2,1,.05)),
+            banner2: Mat4.translation(-1.7,2,0).times(Mat4.scale(1.2,1,.05)),
+        }
+
+        this.shapes.cylinder.draw(context, program_state, lightpost_transform.times(lightpost.pole), this.materials.plastic.override( {color: pole_color}))
+        this.shapes.cone.draw(context, program_state, lightpost_transform.times(lightpost.light), this.materials.plastic.override( {color: light_color}))
+
+        this.shapes.rectangle.draw(context, program_state, lightpost_transform.times(lightpost.banner1), this.materials.plastic.override( {color: banner_color}))
+        this.shapes.rectangle.draw(context, program_state, lightpost_transform.times(lightpost.banner2), this.materials.plastic.override( {color: banner_color}))
+
     }
 
     draw_bench(context, program_state, bench_transform) {
@@ -387,6 +383,11 @@ export class BruinRun extends Base_Scene {
         let temp_tree_trans = Mat4.translation(12,12,2,1);
         let temp_tree_2 = Mat4.translation(-21, 12, 2,1);
         let temp_bench_location = Mat4.translation(-14,4,5);
+
+        let temp_lightpost = Mat4.translation(-13.8,10,4).times(Mat4.scale(.8,.8,.8));
+
+        this.draw_lightpost(context, program_state, temp_lightpost);
+
         this.draw_tree(context, program_state, temp_tree_2);
         this.draw_tree(context, program_state, temp_tree_trans);
 
