@@ -312,6 +312,24 @@ export class Assignment2 extends Base_Scene {
         // Draws a person at the origin, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
+        // Jumping 
+        if (this.isJumping){
+            this.jumpHeight += 1; 
+            // reached max jump height-> reset jump flag and height, later make it so the person falls back down
+            if (this.jumpHeight > 30){
+                this.isJumping = false; 
+                this.jumpHeight = 0;
+            }
+            model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
+        }
+        // Apply jumping translation
+        // change this so it just changes this.person_transform -> less computationally expensive
+        // for (let matrix in person){
+        //     //person[matrix] = person[matrix].times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
+        //     model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
+        // }
+    
+
         const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a");
 
         let person = {
@@ -326,21 +344,6 @@ export class Assignment2 extends Base_Scene {
         // Use custom transform_matrix to modify entire person at once
         for (let matrix in person) { 
             person[matrix] = person[matrix].times(model_transform); 
-        }
-
-        // Jumping 
-        if (this.isJumping){
-            this.jumpHeight += 1; 
-            // reached max jump height-> reset jump flag and height, later make it so the person falls back down
-            if (this.jumpHeight > 30){
-                this.isJumping = false; 
-                this.jumpHeight = 0;
-            }
-        }
-        // Apply jumping translation
-        // change this so it just changes this.person_transform -> less computationally expensive
-        for (let matrix in person){
-            person[matrix] = person[matrix].times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
         }
 
         // Left/Right Movement
