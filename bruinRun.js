@@ -197,11 +197,7 @@ export class Assignment2 extends Base_Scene {
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("Change Colors", ["c"], this.set_colors);
-        // Add a button for controlling the scene.
-        this.key_triggered_button("Outline", ["o"], () => {
-            // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
-        });
+
         this.key_triggered_button("Sit still", ["m"], () => {
             // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
         });
@@ -377,7 +373,7 @@ export class Assignment2 extends Base_Scene {
         this.draw_person(context, program_state, this.person_transform);
 
        this.draw_walkway(context, program_state, walkway_transform);
-       let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
-       program_state.set_camera(desired);
+    //    let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
+    //    program_state.set_camera(desired);
     }
 }

@@ -879,14 +879,14 @@ const Movement_Controls = defs.Movement_Controls =
             this.new_line();
             this.new_line();
 
-            this.key_triggered_button("Up", ["m"], () => this.thrust[1] = -1, undefined, () => this.thrust[1] = 0);
+            this.key_triggered_button("Up", ["u"], () => this.thrust[1] = -1, undefined, () => this.thrust[1] = 0);
             this.key_triggered_button("Forward", ["i"], () => this.thrust[2] = 1, undefined, () => this.thrust[2] = 0);
             this.new_line();
             this.key_triggered_button("Left", ["j"], () => this.thrust[0] = 1, undefined, () => this.thrust[0] = 0);
             this.key_triggered_button("Back", ["k"], () => this.thrust[2] = -1, undefined, () => this.thrust[2] = 0);
-            this.key_triggered_button("Right", ["l"], () => this.thrust[0] = -1, undefined, () => this.thrust[0] = 0);
+            this.key_triggered_button("Right", ["l'"], () => this.thrust[0] = -1, undefined, () => this.thrust[0] = 0);
             this.new_line();
-            this.key_triggered_button("Down", ["z"], () => this.thrust[1] = 1, undefined, () => this.thrust[1] = 0);
+            this.key_triggered_button("Down", ["h"], () => this.thrust[1] = 1, undefined, () => this.thrust[1] = 0);
 
             const speed_controls = this.control_panel.appendChild(document.createElement("span"));
             speed_controls.style.margin = "30px";
