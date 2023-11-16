@@ -103,6 +103,9 @@ class Base_Scene extends Scene {
         this.moveForward = false;
         this.moveBackward = false; 
 
+        this.running = false; 
+        this.runDist = 0; 
+
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -208,8 +211,11 @@ export class BruinRun extends Base_Scene {
                 this.moveRight = true; 
             }
         })
-        this.key_triggered_button("Forward(temp)", ["w"], () => {
+        this.key_triggered_button("Forward", ["w"], () => {
             this.moveForward = true; 
+        })
+        this.key_triggered_button("RUN", ["q"], () => {
+            this.running = true; 
         })
     }
 
@@ -384,6 +390,15 @@ export class BruinRun extends Base_Scene {
         }
         if(this.moveBackward){
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
+        }
+        if(this.running){
+            // add more to this function once collision detection is done
+            this.runDist +=1; 
+            // limit dictates run distance 
+            if(this.runDist < 500){
+                // Last parameter dictates speed
+                this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
+            }
         }
 
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
