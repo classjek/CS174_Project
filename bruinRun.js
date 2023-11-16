@@ -98,14 +98,24 @@ class Base_Scene extends Scene {
         // for lateral movement
         this.moveLeft = false;
         this.moveRight = false; 
+        
+        // to test forward/back movement. Will eventually be automatic
+        this.moveForward = false;
+        this.moveBackward = false; 
 
-        // Event listeners for lateral movement
+        // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
                 this.moveRight = true;
             }
             if (event.key === 'a'){
                 this.moveLeft = true; 
+            }
+            if(event.key === 'w'){
+                this.moveFoward = true; 
+            }
+            if(event.key === 's'){
+                this.moveBackward = true; 
             }
         })
         document.addEventListener('keyup', (event)=> {
@@ -114,6 +124,12 @@ class Base_Scene extends Scene {
             }
             if (event.key === 'a'){
                 this.moveLeft = false; 
+            }
+            if(event.key === 'w'){
+                this.moveForward = false; 
+            }
+            if(event.key === 's'){
+                this.moveBackward = false; 
             }
         })
 
@@ -191,6 +207,9 @@ export class BruinRun extends Base_Scene {
             if(!this.moveRight){
                 this.moveRight = true; 
             }
+        })
+        this.key_triggered_button("Forward(temp)", ["w"], () => {
+            this.moveForward = true; 
         })
     }
 
@@ -358,6 +377,13 @@ export class BruinRun extends Base_Scene {
         }
         if(this.moveLeft){
             this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
+        }
+        if(this.moveForward){
+            // because inverted z axis 
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
+        }
+        if(this.moveBackward){
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
         }
 
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
