@@ -401,6 +401,31 @@ export class BruinRun extends Base_Scene {
             }
         }
 
+        // Walking Animation Parameters
+        const x = program_state.animation_time / 1000;
+        let max_angle = Math.PI / 5;
+        let swing_seconds = 2;
+        let t = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x);
+        let t_reverse = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
+
+        // Walking Animation
+        person.arms_transformL = person.arms_transformL
+            .times(Mat4.translation(0, 2, 0))
+            .times(Mat4.rotation(t, 1, 0, 0))
+            .times(Mat4.translation(0, -2, 0));
+        person.arms_transformR = person.arms_transformR
+            .times(Mat4.translation(0, 2, 0))
+            .times(Mat4.rotation(t_reverse, 1, 0, 0))
+            .times(Mat4.translation(0, -2, 0));
+        person.legs_transformL = person.legs_transformL
+            .times(Mat4.translation(0, 2.25, 0))
+            .times(Mat4.rotation(t_reverse, 1, 0, 0))
+            .times(Mat4.translation(0, -2.25, 0));         
+        person.legs_transformR = person.legs_transformR
+            .times(Mat4.translation(0, 2.25, 0))
+            .times(Mat4.rotation(t, 1, 0, 0))
+            .times(Mat4.translation(0, -2.25, 0));
+
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
         person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
         person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
