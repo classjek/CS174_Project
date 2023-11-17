@@ -90,6 +90,8 @@ class Base_Scene extends Scene {
 
         // Initialize person translation here so position isn't continuously reset 
         this.person_transform = Mat4.translation(0, 10, 5);
+        this.walkway_path_transform = Mat4.translation(-5,0,0).times(Mat4.scale(16,8,1));
+        this.sky_transform = Mat4.translation(-5,15.5,-1).times(Mat4.scale(40,8,1));
 
         // for jumping mechanic
         this.isJumping = false;
@@ -331,64 +333,18 @@ export class BruinRun extends Base_Scene {
 
     }   
 
-    // draw_walkway(context, program_state, walkway_transform)  {
-    //     //THIS DRAWS A STATIC WALKWAY
-
-    //     const gray = hex_color("#bebebe");
-    //     let w_Sc = Mat4.scale(8,3,0,1);
-    //     let w_Tr = Mat4.translation(-4,0,0,1);
-    //     walkway_transform = walkway_transform.times(w_Tr).times(w_Sc);
-    //     this.shapes.walkway.draw(context, program_state, walkway_transform, this.materials.plastic.override({color: gray}));
-
-    //     //SKY
-    //     let sky_transform = Mat4.identity();
-    //     const blue = hex_color("#1a9ffa");
-    //     let sky_Tr = Mat4.translation(-4,20,-4,1);
-    //     let sky_Sc = Mat4.scale(5,15,1,1);
-    //     let sky_Rt = Mat4.rotation(Math.PI/2, 0, 0, 1);
-    //     sky_transform = sky_transform.times(sky_Tr).times(sky_Rt).times(sky_Sc);
-    //     this.shapes.rectangle.draw(context, program_state, sky_transform, this.materials.plastic.override({color: blue}));
-
-    //     //BUSHES
-    //     let bush1_transform = Mat4.identity();
-    //     let bush1_Tr = Mat4.translation(-17,-8.5,3,1);
-    //     let bush1_Rt = Mat4.rotation(-Math.PI/3.9,0,0,1);
-    //     let bush1_Sc = Mat4.scale(.8,6.5,1,1)
-    //     bush1_transform = bush1_transform.times(bush1_Rt).times(bush1_Tr).times(bush1_Sc);
-    //     this.shapes.rectangle.draw(context, program_state, bush1_transform, this.materials.plastic.override( {color: hex_color("#0a4915")}));
-
-    //     let bush2_Tr = Mat4.translation(11, -2, 3, 1);
-    //     let bush2_Rt = Mat4.rotation(Math.PI/3.9,0,0,1);
-    //     let bush2_Sc = bush1_Sc;
-    //     let bush2_transform = Mat4.identity();
-    //     bush2_transform = bush2_transform.times(bush2_Rt).times(bush2_Tr).times(bush2_Sc);
-    //     this.shapes.rectangle.draw(context, program_state, bush2_transform, this.materials.plastic.override( {color: hex_color("#0a4915")}));
-
-
-    //     //ACKERMAN
-    //     let ack_trans = Mat4.identity();
-    //     let ack_Sc = Mat4.scale(10,8,1,1);
-    //     let ack_Tr = Mat4.translation(16,11,-.1,1);
-    //     let ack_Rt = Mat4.rotation(Math.PI/2,0,0,1);
-    //     ack_trans = ack_trans.times(ack_Tr).times(ack_Sc).times(ack_Rt);
-    //         //TODO: should stripe the colors w/ red so it actually looks like Ackerman
-    //     this.shapes.trapezoid.draw(context, program_state, ack_trans, this.materials.plastic.override( {color: hex_color("#e0d7b2")}));
-
-    // }
-
     draw_walkway(context, program_state, walkway_transform) {
         const path_color = hex_color("#bebebe");
         const sky_color = hex_color("#1a9ffa");
 
-
-        let walkway = {
-            path: Mat4.translation(-5,0,0).times(Mat4.scale(16,8,1)),
-            sky: Mat4.translation(-5,15.5,-1).times(Mat4.scale(25,4,1)),
+        if (this.running) {
+            this.walkway_path_transform = this.walkway_path_transform.times(Mat4.translation(0,0,-.2));
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
         }
         //TODO:
             //as the person moves, also translate the walkway with them so it moves at the same rate as the person
-        this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(walkway.path), this.materials.plastic.override( {color: path_color}))
-        this.shapes.rectangle.draw(context, program_state, walkway_transform.times(walkway.sky), this.materials.plastic.override( {color: sky_color}))
+        this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
+        this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
 
     }
 
@@ -519,7 +475,7 @@ export class BruinRun extends Base_Scene {
 
         let temp_bot = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
        this.draw_starship(context, program_state, temp_bot);
-    //    let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
-    //    program_state.set_camera(desired);
+       let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 30)));
+       program_state.set_camera(desired);
     }
 }
