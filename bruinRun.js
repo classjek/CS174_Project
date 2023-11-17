@@ -145,7 +145,8 @@ class Base_Scene extends Scene {
             'cylinder': new defs.Cylindrical_Tube(10,10),
             'triangle': new defs.Triangle(),
             'sphere': new defs.Subdivision_Sphere(4),
-            'cone': new defs.Rounded_Closed_Cone(20,20)
+            'cone': new defs.Rounded_Closed_Cone(20,20),
+            'bot': new defs.Rounded_Capped_Cylinder(35,35),
 
         };
 
@@ -298,6 +299,37 @@ export class BruinRun extends Base_Scene {
 
 
     }
+
+    draw_starship(context, program_state, bot_transform) {
+        const body_color = hex_color("#ffffff");
+        const wheel_color = hex_color("#38424c");
+        const flag_color = hex_color("#f69509");
+
+        let starship = {
+            //use rounded_capped_cylinder
+            body: Mat4.rotation(Math.PI/2, 0, 5, 0).times(Mat4.scale(1.3,1,3.5)),
+            wheel1: Mat4.translation(-.2,-1,1.1).times(Mat4.scale(.5,.5,.1)),
+            wheel2: Mat4.translation(-1.2,-1,1.1).times(Mat4.scale(.5,.5,.1)),
+            wheel3: Mat4.translation(.8,-1,1.1).times(Mat4.scale(.5,.5,.1)),
+            pole: Mat4.rotation(Math.PI/2,5,0,.5).times(Mat4.scale(.1,.1,5)).times(Mat4.translation(-6,0,-.4)),
+            flag: Mat4.translation(-.8,4.3,0).times(Mat4.rotation(Math.PI, -1,0,1)).times(Mat4.scale(.1,.6,.5)),
+            square: Mat4.translation(0,.35,1.4).times(Mat4.scale(.8,.2,.1)),
+        }
+        
+        this.shapes.bot.draw(context, program_state, bot_transform.times(starship.body), this.materials.plastic.override( {color: body_color }))
+        this.shapes.sphere.draw(context, program_state, bot_transform.times(starship.wheel1), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.sphere.draw(context, program_state, bot_transform.times(starship.wheel2), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.sphere.draw(context, program_state, bot_transform.times(starship.wheel3), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.sphere.draw(context, program_state, bot_transform.times(starship.wheel1).times(Mat4.translation(0,0,-22)), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.sphere.draw(context, program_state, bot_transform.times(starship.wheel2).times(Mat4.translation(0,0,-22)), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.sphere.draw(context, program_state, bot_transform.times(starship.wheel3).times(Mat4.translation(0,0,-22)), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.cylinder.draw(context, program_state, bot_transform.times(starship.pole), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.cone.draw(context, program_state, bot_transform.times(starship.flag), this.materials.plastic.override( {color: flag_color}))
+
+        this.shapes.rectangle.draw(context, program_state, bot_transform.times(starship.square), this.materials.plastic.override( {color: wheel_color}))
+
+
+    }   
 
     draw_walkway(context, program_state, walkway_transform)  {
         //THIS DRAWS A STATIC WALKWAY
@@ -461,6 +493,9 @@ export class BruinRun extends Base_Scene {
         this.draw_bench(context, program_state, temp_bench_location);
 
        this.draw_walkway(context, program_state, walkway_transform);
+
+        let temp_bot = Mat4.translation(-7,7,5).times(Mat4.scale(.8, .8,.8));
+       this.draw_starship(context, program_state, temp_bot);
     //    let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
     //    program_state.set_camera(desired);
     }
