@@ -106,6 +106,20 @@ class Base_Scene extends Scene {
         this.running = false; 
         this.runDist = 0; 
 
+        // Add variables to track mouse drag
+        this.dragging = false;
+        this.prev_mouse = { x: 0, y: 0 };
+
+        // Add event listeners for mouse drag
+        document.addEventListener('mousedown', (event) => {
+            this.dragging = true;
+            this.prev_mouse = { x: event.clientX, y: event.clientY };
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.dragging = false;
+        });
+
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -115,10 +129,16 @@ class Base_Scene extends Scene {
                 this.moveLeft = true; 
             }
             if(event.key === 'w'){
-                this.moveFoward = true; 
+                this.moveForward = true; 
             }
             if(event.key === 's'){
                 this.moveBackward = true; 
+            }
+            if (event.key === 'Escape') {
+                this.detach_camera = true;
+            }
+            if (event.key === '1') {
+                this.detach_camera = false;
             }
         })
         document.addEventListener('keyup', (event)=> {
@@ -165,24 +185,6 @@ class Base_Scene extends Scene {
         // The white material and basic shader are used for drawing the outline.
         this.white = new Material(new defs.Basic_Shader());
     }
-
-    display(context, program_state) {
-        // display():  Called once per frame of animation. Here, the base class's display only does
-        // some initial setup.
-
-        // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-        if (!context.scratchpad.controls) {
-            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
-            // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(5, -10, -30));
-        }
-        program_state.projection_transform = Mat4.perspective(
-            Math.PI / 4, context.width / context.height, 1, 100);
-
-        // *** Lights: *** Values of vector or point lights.
-        const light_position = vec4(5, 30, 20, 1);
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-    }
 }
 
 export class BruinRun extends Base_Scene {
@@ -192,6 +194,11 @@ export class BruinRun extends Base_Scene {
      * This gives you a very small code sandbox for editing a simple scene, and for
      * experimenting with matrix transformations.
      */
+
+    constructor(){
+        super();
+        this.detach_camera = false;
+    }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
@@ -217,6 +224,13 @@ export class BruinRun extends Base_Scene {
         })
         this.key_triggered_button("RUN", ["q"], () => {
             this.running = true; 
+        })
+
+        this.key_triggered_button("Unlock Camera", ["Escape"], () =>{
+            this.detach_camera = true;
+        })
+        this.key_triggered_button("Lock Camera", ["1"], () =>{
+            this.detach_camera = false;
         })
     }
 
@@ -493,6 +507,25 @@ export class BruinRun extends Base_Scene {
     display(context, program_state) {
         super.display(context, program_state);
 
+                // display():  Called once per frame of animation. Here, the base class's display only does
+        // some initial setup.
+
+        // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+        const initial_camera_position = Mat4.translation(5, -10, -30);
+
+        if (!context.scratchpad.controls) {
+            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+            // Define the global camera and projection matrices, which are stored in program_state.
+            program_state.set_camera(initial_camera_position);
+        }
+
+        program_state.projection_transform = Mat4.perspective(
+            Math.PI / 4, context.width / context.height, 1, 100);
+
+        // *** Lights: *** Values of vector or point lights.
+        const light_position = vec4(5, 30, 20, 1);
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+
         let walkway_transform = Mat4.identity();
         let temp_tree_1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
         let temp_tree_2 = Mat4.translation(-21, 12, 1,1).times(Mat4.scale(.8,.8,.8));
@@ -519,7 +552,10 @@ export class BruinRun extends Base_Scene {
 
         let temp_bot = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
        this.draw_starship(context, program_state, temp_bot);
-    //    let desired = Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)));
-    //    program_state.set_camera(desired);
+
+       if(!this.detach_camera){
+            //Use the default camera position
+            program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));       
+       }
     }
 }
