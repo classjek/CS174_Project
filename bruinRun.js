@@ -89,9 +89,12 @@ class Base_Scene extends Scene {
         this.hover = this.swarm = false;
 
         // Initialize person translation here so position isn't continuously reset 
-        this.person_transform = Mat4.translation(0, 10, 5);
+        this.person_transform = Mat4.translation(0, 10, 10);
         this.walkway_path_transform = Mat4.translation(-5,0,0).times(Mat4.scale(16,8,1));
         this.sky_transform = Mat4.translation(-5,15.5,-1).times(Mat4.scale(40,8,1));
+
+        this.person_z = 10;  //used to identify WHERE the person is in the scene
+                    //hopefully we can use it to add objects as the person progresses
 
         // for jumping mechanic
         this.isJumping = false;
@@ -185,7 +188,6 @@ class Base_Scene extends Scene {
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
         };
         // The white material and basic shader are used for drawing the outline.
-        this.white = new Material(new defs.Basic_Shader());
     }
 }
 
@@ -200,6 +202,10 @@ export class BruinRun extends Base_Scene {
     constructor(){
         super();
         this.detach_camera = false;
+
+
+        this.bot_transform = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
+        this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
     }
 
     make_control_panel() {
@@ -225,7 +231,7 @@ export class BruinRun extends Base_Scene {
             this.moveForward = true; 
         })
         this.key_triggered_button("RUN", ["q"], () => {
-            this.running = true; 
+            this.running = !this.running; 
         })
 
         this.key_triggered_button("Unlock Camera", ["Escape"], () =>{
@@ -355,8 +361,7 @@ export class BruinRun extends Base_Scene {
             this.walkway_path_transform = this.walkway_path_transform.times(Mat4.translation(0,0,-.2));
             this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
         }
-        //TODO:
-            //as the person moves, also translate the walkway with them so it moves at the same rate as the person
+
         this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
         this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
 
@@ -416,6 +421,8 @@ export class BruinRun extends Base_Scene {
             if(this.runDist < 500){
                 // Last parameter dictates speed
                 this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
+                this.person_z = this.person_z - 0.2;
+                console.log(this.person_z);
             }
         }
 
@@ -481,8 +488,9 @@ export class BruinRun extends Base_Scene {
         // *** Lights: *** Values of vector or point lights.
         const light_position = vec4(5, 30, 20, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        let t = program_state.animation_time / 1000;
 
-        let walkway_transform = Mat4.identity();
+        let walkway_transform = Mat4.translation(0,0,-10);
         let temp_tree_1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
         let temp_tree_2 = Mat4.translation(-21, 12, 1,1).times(Mat4.scale(.8,.8,.8));
         let temp_tree_3 = Mat4.translation(-23, 9, 3,1);
@@ -491,23 +499,47 @@ export class BruinRun extends Base_Scene {
         let temp_bench_location = Mat4.translation(-15,4,5);
 
         let temp_lightpost = Mat4.translation(-15,10,4).times(Mat4.scale(.8,.8,.8));
-
-        this.draw_lightpost(context, program_state, temp_lightpost);
-
-        this.draw_tree(context, program_state, temp_tree_2);
-        this.draw_tree(context, program_state, temp_tree_1);
-        this.draw_tree(context, program_state, temp_tree_3);
-        this.draw_tree(context, program_state, temp_tree_4);
+        this.draw_walkway(context, program_state, walkway_transform);
 
 
 
         this.draw_person(context, program_state, this.person_transform);
         this.draw_bench(context, program_state, temp_bench_location);
 
-       this.draw_walkway(context, program_state, walkway_transform);
+        //let temp_bot = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
 
-        let temp_bot = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
-       this.draw_starship(context, program_state, temp_bot);
+        if (Math.abs((this.person_z)%40) <.2 ) {
+            /* 
+            
+            THOUGHTS
+                might need a this.xx function for each thing we want to put in the scene
+                so we can make it related to this.person_x
+                and it won't get overwritten each time display is called
+
+            WILL ALSO NEED TO RANDOMIZE PLACEMENT
+
+            TODO: scale as gets closer, rn it's all the same size
+            TODO: add hella more trees, cause only moving 2 back and forth isn't going to work
+                --> also need to scale
+            
+            */
+            this.bot_transform = this.bot_transform.times(Mat4.translation(0,0,-20));  
+            this.right_tree1 = this.right_tree1.times(Mat4.translation(0,0,-20));  
+        
+        }
+
+        this.draw_lightpost(context, program_state, temp_lightpost);
+
+        this.draw_tree(context, program_state, temp_tree_2);
+        this.draw_tree(context, program_state, this.right_tree1);
+        this.draw_tree(context, program_state, temp_tree_3);
+        this.draw_tree(context, program_state, temp_tree_4);
+
+       
+
+       let bot_motion = Mat4.translation(15*Math.sin(Math.PI/3 * t),0,0);
+
+       this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
 
        if(!this.detach_camera){
             //Use the default camera position
