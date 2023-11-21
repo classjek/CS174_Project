@@ -216,6 +216,9 @@ export class BruinRun extends Base_Scene {
         // Why are some things here and some things in the Base_Scene constructor?
         this.bot_transform = Mat4.translation(-3,4,0).times(Mat4.scale(1.4, 1.4, 1.4));
         this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
+
+        this.lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
+
     }
 
     make_control_panel() {
@@ -515,25 +518,20 @@ export class BruinRun extends Base_Scene {
         let t = program_state.animation_time / 1000;
 
         let walkway_transform = Mat4.translation(0,0,-10);
-        let temp_tree_1 = Mat4.translation(10,11.5,1,1);
-        let temp_tree_2 = Mat4.translation(-21, 11.5, 1,1);
+        let tree1_pos = Mat4.translation(10,11.5,1,1);
+        let tree2_pos = Mat4.translation(-21, 11.5, 1,1);
 
-        let trees = [temp_tree_1, temp_tree_2];
+        let trees = [tree1_pos, tree2_pos];
 
         
 
-        let lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
         this.draw_walkway(context, program_state, walkway_transform);
-
-
-
         this.draw_person(context, program_state, this.person_transform);
 
 
 
 
         // Draw more trees
-        // bring them down so they're flush with walkway 
         trees.forEach(tree => {
             this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)));
             let further_tree = tree.times(Mat4.translation(0, -2.5, -20));
@@ -544,13 +542,20 @@ export class BruinRun extends Base_Scene {
             this.draw_tree(context, program_state, further_tree);
         });
 
-        for (let i = 1; i < 4; i++) {
-            this.draw_lightpost(context, program_state, lightpost_pos);
-            let move_lightpost = Mat4.translation(0,0,-40*i);
+        //TODO: Figure out how to make it not slide, has something to do w/ the z param in translation
+        // if ( (Math.floor(this.person_z) % 100) == -50) {
+        //     console.log( Math.floor(this.person_z) );
+        //     this.lightpost_pos = this.lightpost_pos.times(Mat4.translation(0,0,-20));
+        // }
+
+
+        for (let i = 1; i < 6; i++) {
+            this.draw_lightpost(context, program_state, this.lightpost_pos);
+            let move_lightpost = Mat4.translation(0,0,-20*i);
             let flip_lightpost = Mat4.translation(31,0,-5);
-            this.draw_lightpost(context, program_state, lightpost_pos.times(move_lightpost));
-            this.draw_lightpost(context, program_state, lightpost_pos.times(flip_lightpost));
-            this.draw_lightpost(context, program_state, lightpost_pos.times(flip_lightpost).times(move_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(move_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(flip_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(flip_lightpost).times(move_lightpost));
 
         }
 
@@ -563,8 +568,6 @@ export class BruinRun extends Base_Scene {
             this.draw_bench(context, program_state, bench_pos.times(move_bench));
             this.draw_bench(context, program_state, bench_pos.times(flip_bench));
             this.draw_bench(context, program_state, bench_pos.times(flip_bench).times(move_bench));
-
-
         }
 
         
