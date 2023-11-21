@@ -90,10 +90,14 @@ class Base_Scene extends Scene {
 
         // Initialize person translation here so position isn't continuously reset 
         this.person_transform = Mat4.translation(0, 10, 10);
-        this.walkway_path_transform = Mat4.translation(-5,0,0).times(Mat4.scale(16,8,1));
+
+        // Initialize walkway so it is one big piece that the character will walk over
+        // A little confused here, is this order correct? 
+        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-10,-1.5)).times(Mat4.scale(16,50,2));
         this.sky_transform = Mat4.translation(-5,15.5,-1).times(Mat4.scale(40,8,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
+                    // also used for collision detection
                     //hopefully we can use it to add objects as the person progresses
 
         // for jumping mechanic
@@ -110,6 +114,12 @@ class Base_Scene extends Scene {
 
         this.running = false; 
         this.runDist = 0; 
+
+        // to test flagship stuff DELELTE Later
+        this.flagship_transform = 0; 
+
+        // keeps track of starship locations - only x and z matter
+        this.starship_locations = new Map();
 
         // Add variables to track mouse drag
         this.dragging = false;
@@ -203,8 +213,8 @@ export class BruinRun extends Base_Scene {
         super();
         this.detach_camera = false;
 
-
-        this.bot_transform = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
+        // Why are some things here and some things in the Base_Scene constructor?
+        this.bot_transform = Mat4.translation(-8,4,0).times(Mat4.scale(1.4, 1.4, 1.4));
         this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
     }
 
@@ -327,6 +337,12 @@ export class BruinRun extends Base_Scene {
         const wheel_color = hex_color("#38424c");
         const flag_color = hex_color("#f69509");
 
+        // Keep track of starship locations for collision detection
+        // may or may not use this depending on how the scene is populated with starships
+        // with predictable z coordinates, this won't be necessary
+        this.starship_locations.set(bot_transform[2][3], bot_transform[0][3]);
+
+
         let starship = {
             //use rounded_capped_cylinder
             body: Mat4.rotation(Math.PI/2, 0, 5, 0).times(Mat4.scale(1.3,1,3.5)),
@@ -350,26 +366,32 @@ export class BruinRun extends Base_Scene {
 
         this.shapes.rectangle.draw(context, program_state, bot_transform.times(starship.square), this.materials.plastic.override( {color: wheel_color}))
 
-
     }   
 
     draw_walkway(context, program_state, walkway_transform) {
         const path_color = hex_color("#bebebe");
         const sky_color = hex_color("#1a9ffa");
 
-        if (this.running) {
-            this.walkway_path_transform = this.walkway_path_transform.times(Mat4.translation(0,0,-.2));
-            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
-        }
 
+        // Wouldn't it be easier to just move this with person_z?  -jake
+        // Removed sky for now but we should implement something like this in later
+        // if (this.running) {
+        //     this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
+        // }
+
+        // Draw walkway 
         this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
-        this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
+        // Draw sky background
+        //this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
 
     }
 
     draw_person(context, program_state, model_transform = Mat4.identity()) {
         // Draws a person at the origin, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
+
+        // Check if there is a collision
+        //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
 
         // Jumping 
         if (this.isJumping){
@@ -410,9 +432,11 @@ export class BruinRun extends Base_Scene {
         if(this.moveForward){
             // because inverted z axis 
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
+            this.person_z = this.person_z + -1; 
         }
         if(this.moveBackward){
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
+            this.person_z = this.person + 1; 
         }
         if(this.running){
             // add more to this function once collision detection is done
@@ -422,7 +446,7 @@ export class BruinRun extends Base_Scene {
                 // Last parameter dictates speed
                 this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
                 this.person_z = this.person_z - 0.2;
-                console.log(this.person_z);
+                // console.log(this.person_z);
             }
         }
 
@@ -433,6 +457,7 @@ export class BruinRun extends Base_Scene {
         let t = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x);
         let t_reverse = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
 
+        // change this so it is conditional based on if the character is moving or not
         // Walking Animation
         person.arms_transformL = person.arms_transformL
             .times(Mat4.translation(0, 2, 0))
@@ -508,25 +533,27 @@ export class BruinRun extends Base_Scene {
 
         //let temp_bot = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
 
-        if (Math.abs((this.person_z)%40) <.2 ) {
-            /* 
+        // Remove for now, this was used for the other perspective that we aren't going with
+        // but something like this could be used to add an infinite effect by rerending nearly the entire scene at given intervals
+        // if (Math.abs((this.person_z)%40) <.2 ) {
+        //     /* 
             
-            THOUGHTS
-                might need a this.xx function for each thing we want to put in the scene
-                so we can make it related to this.person_x
-                and it won't get overwritten each time display is called
+        //     THOUGHTS
+        //         might need a this.xx function for each thing we want to put in the scene
+        //         so we can make it related to this.person_x
+        //         and it won't get overwritten each time display is called
 
-            WILL ALSO NEED TO RANDOMIZE PLACEMENT
+        //     WILL ALSO NEED TO RANDOMIZE PLACEMENT
 
-            TODO: scale as gets closer, rn it's all the same size
-            TODO: add hella more trees, cause only moving 2 back and forth isn't going to work
-                --> also need to scale
+        //     TODO: scale as gets closer, rn it's all the same size
+        //     TODO: add hella more trees, cause only moving 2 back and forth isn't going to work
+        //         --> also need to scale
             
-            */
-            this.bot_transform = this.bot_transform.times(Mat4.translation(0,0,-20));  
-            this.right_tree1 = this.right_tree1.times(Mat4.translation(0,0,-20));  
+        //     */
+        //     this.bot_transform = this.bot_transform.times(Mat4.translation(0,0,-20));  
+        //     this.right_tree1 = this.right_tree1.times(Mat4.translation(0,0,-20));  
         
-        }
+        // }
 
         this.draw_lightpost(context, program_state, temp_lightpost);
 
