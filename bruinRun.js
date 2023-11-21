@@ -93,7 +93,7 @@ class Base_Scene extends Scene {
 
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
-        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-10,-1.5)).times(Mat4.scale(16,50,2));
+        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
         this.sky_transform = Mat4.translation(-5,15.5,-1).times(Mat4.scale(40,8,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
@@ -521,6 +521,10 @@ export class BruinRun extends Base_Scene {
         let temp_tree_3 = Mat4.translation(-23, 9, 3,1);
         let temp_tree_4 = Mat4.translation(12, 9, 3,1);
 
+        let trees = [temp_tree_1, temp_tree_2];
+
+        
+
         let temp_bench_location = Mat4.translation(-15,4,5);
 
         let temp_lightpost = Mat4.translation(-15,10,4).times(Mat4.scale(.8,.8,.8));
@@ -562,12 +566,27 @@ export class BruinRun extends Base_Scene {
         this.draw_tree(context, program_state, temp_tree_3);
         this.draw_tree(context, program_state, temp_tree_4);
 
+        // Draw more trees
+        // bring them down so they're flush with walkway 
+        trees.forEach(tree => {
+            let further_tree = tree.times(Mat4.translation(0, -5, -20));
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(Mat4.translation(0, -5, -30));
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(Mat4.translation(2, -5, -45));
+            this.draw_tree(context, program_state, further_tree);
+        });
+
+
        
 
        let bot_motion = Mat4.translation(15*Math.sin(Math.PI/3 * t),0,0);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(-1*15*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       bot_motion = Mat4.translation(15*Math.sin(Math.PI/3 * t/2),0,-30);
+       this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+
 
 
        if(!this.detach_camera){
