@@ -122,20 +122,6 @@ class Base_Scene extends Scene {
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
 
-        // Add variables to track mouse drag
-        this.dragging = false;
-        this.prev_mouse = { x: 0, y: 0 };
-
-        // Add event listeners for mouse drag
-        document.addEventListener('mousedown', (event) => {
-            this.dragging = true;
-            this.prev_mouse = { x: event.clientX, y: event.clientY };
-        });
-
-        document.addEventListener('mouseup', () => {
-            this.dragging = false;
-        });
-
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
