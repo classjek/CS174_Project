@@ -117,6 +117,7 @@ class Base_Scene extends Scene {
 
         // to test flagship stuff DELELTE Later
         this.flagship_transform = 0; 
+        this.key_check = true;
 
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
@@ -343,6 +344,10 @@ export class BruinRun extends Base_Scene {
         // Keep track of starship locations for collision detection
         // may or may not use this depending on how the scene is populated with starships
         // with predictable z coordinates, this won't be necessary
+        if(this.key_check){
+            console.log('bot y location', bot_transform[2][3]);
+            this.key_check = false; 
+        }
         this.starship_locations.set(bot_transform[2][3], bot_transform[0][3]);
 
 
@@ -396,18 +401,19 @@ export class BruinRun extends Base_Scene {
         // Check if there is a collision
         //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
 
+
         // Jumping 
         if (this.isJumping){
             this.jumpHeight += 1; 
             // reached max jump height-> reset jump flag and height, later make it so the person falls back down
-            if (this.jumpHeight > 30){
+            if (this.jumpHeight > 50){
                 this.isJumping = false; 
                 this.jumpHeight = 0;
             }
-            model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/30), 0));
+            model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/50), 0));
         }
 
-        const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a");
+        const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a"), red = hex_color('#ff1401');
 
         let person = {
             head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
@@ -485,13 +491,40 @@ export class BruinRun extends Base_Scene {
         person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
         person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
-        // Drawing the body
-        this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(yellow));
-        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(blue));
-        this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(yellow));
-        this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(yellow));
-        this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(yellow));
-        this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(yellow));
+        let rounded_person_z = Math.round(model_transform[2][3]);
+        let collision = false; 
+        // check within a 4 unit radius if there is a collision
+        for(let i = 0; i < 8; i++){
+            const key = rounded_person_z -4 + i; 
+            // check if key-value pair exists in starship_locations, assign to starship_x
+            if(this.starship_locations.get(key)){
+                let starship_x = Math.round(this.starship_locations.get(key));
+                let rounded_person_x = Math.round(model_transform[0][3]) ;
+
+                // check if collision within 3 unit radius 
+                for(let i = 0; i < 6; i++){
+                    if(rounded_person_x - 3 + i === starship_x){
+                        collision = true; 
+                    }
+                }
+            }
+        } 
+
+        if(!collision){
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(yellow));
+            this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(blue));
+            this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(yellow));
+            this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(yellow));
+            this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(yellow));
+            this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(yellow));
+        } else {
+            this.shapes.cube.draw(context, program_state, person.head_transform,  this.materials.plastic.override(red));
+            this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(red));
+            this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(red));
+            this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(red));
+            this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(red));
+            this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(red));
+        }
     }
 
     display(context, program_state) {
@@ -569,9 +602,6 @@ export class BruinRun extends Base_Scene {
             this.draw_bench(context, program_state, bench_pos.times(flip_bench));
             this.draw_bench(context, program_state, bench_pos.times(flip_bench).times(move_bench));
         }
-
-        
-
 
        
 
