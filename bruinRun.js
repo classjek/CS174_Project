@@ -565,8 +565,10 @@ export class BruinRun extends Base_Scene {
        
 
        let bot_motion = Mat4.translation(15*Math.sin(Math.PI/3 * t),0,0);
-
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       bot_motion = Mat4.translation(-1*15*Math.sin(Math.PI/3 * t),0,-15);
+       this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+
 
        if(!this.detach_camera){
             //Use the default camera position
