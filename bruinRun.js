@@ -214,7 +214,7 @@ export class BruinRun extends Base_Scene {
         this.detach_camera = false;
 
         // Why are some things here and some things in the Base_Scene constructor?
-        this.bot_transform = Mat4.translation(-8,4,0).times(Mat4.scale(1.4, 1.4, 1.4));
+        this.bot_transform = Mat4.translation(-3,4,0).times(Mat4.scale(1.4, 1.4, 1.4));
         this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
     }
 
@@ -524,7 +524,7 @@ export class BruinRun extends Base_Scene {
 
         let temp_bench_location = Mat4.translation(-15,3,5);
 
-        let temp_lightpost = Mat4.translation(-15,7,4).times(Mat4.scale(.8,.8,.8));
+        let temp_lightpost = Mat4.translation(-15,7,0).times(Mat4.scale(.8,.8,.8));
         this.draw_walkway(context, program_state, walkway_transform);
 
 
@@ -551,11 +551,11 @@ export class BruinRun extends Base_Scene {
 
        
 
-       let bot_motion = Mat4.translation(15*Math.sin(Math.PI/3 * t),0,0);
+       let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-       bot_motion = Mat4.translation(-1*15*Math.sin(Math.PI/3 * t),0,-15);
+       bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-       bot_motion = Mat4.translation(15*Math.sin(Math.PI/3 * t/2),0,-30);
+       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t/2),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
 
 
