@@ -94,7 +94,7 @@ class Base_Scene extends Scene {
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
         this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
-        this.sky_transform = Mat4.translation(-5,15.5,-1).times(Mat4.scale(40,8,1));
+        this.sky_transform = Mat4.translation(-5,15.5,-50).times(Mat4.scale(100,20,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
                     // also used for collision detection
@@ -291,10 +291,10 @@ export class BruinRun extends Base_Scene {
         const temp_color = hex_color("#ff00f0")
         
         let lightpost = {
-            pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.4,.4,10,1)),
-            light: Mat4.translation(0,5,0).times(Mat4.rotation(Math.PI,0,-1,1)).times(Mat4.scale(1.2,1.3,1.5)),
-            banner1: Mat4.translation(1.7,2,0).times(Mat4.scale(1.2,1,.05)),
-            banner2: Mat4.translation(-1.7,2,0).times(Mat4.scale(1.2,1,.05)),
+            pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.4,.4,14,1)),
+            light: Mat4.translation(0,7,0).times(Mat4.rotation(Math.PI,0,-1,1)).times(Mat4.scale(1.2,1.3,1.5)),
+            banner1: Mat4.translation(1.7,4,0).times(Mat4.scale(1.2,1,.05)),
+            banner2: Mat4.translation(-1.7,4,0).times(Mat4.scale(1.2,1,.05)),
         }
 
         this.shapes.cylinder.draw(context, program_state, lightpost_transform.times(lightpost.pole), this.materials.plastic.override( {color: pole_color}))
@@ -382,7 +382,7 @@ export class BruinRun extends Base_Scene {
         // Draw walkway 
         this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
         // Draw sky background
-        //this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
+       // this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
 
     }
 
@@ -446,7 +446,6 @@ export class BruinRun extends Base_Scene {
                 // Last parameter dictates speed
                 this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
                 this.person_z = this.person_z - 0.2;
-                // console.log(this.person_z);
             }
         }
 
@@ -516,18 +515,16 @@ export class BruinRun extends Base_Scene {
         let t = program_state.animation_time / 1000;
 
         let walkway_transform = Mat4.translation(0,0,-10);
-        let temp_tree_1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
-        let temp_tree_2 = Mat4.translation(-21, 12, 1,1).times(Mat4.scale(.8,.8,.8));
-        let temp_tree_3 = Mat4.translation(-23, 9, 3,1);
-        let temp_tree_4 = Mat4.translation(12, 9, 3,1);
+        let temp_tree_1 = Mat4.translation(10,11.5,1,1);
+        let temp_tree_2 = Mat4.translation(-21, 11.5, 1,1);
 
         let trees = [temp_tree_1, temp_tree_2];
 
         
 
-        let temp_bench_location = Mat4.translation(-15,4,5);
+        let temp_bench_location = Mat4.translation(-15,3,5);
 
-        let temp_lightpost = Mat4.translation(-15,10,4).times(Mat4.scale(.8,.8,.8));
+        let temp_lightpost = Mat4.translation(-15,7,4).times(Mat4.scale(.8,.8,.8));
         this.draw_walkway(context, program_state, walkway_transform);
 
 
@@ -535,45 +532,19 @@ export class BruinRun extends Base_Scene {
         this.draw_person(context, program_state, this.person_transform);
         this.draw_bench(context, program_state, temp_bench_location);
 
-        //let temp_bot = Mat4.translation(-8,7,5).times(Mat4.scale(.8, .8,.8));
-
-        // Remove for now, this was used for the other perspective that we aren't going with
-        // but something like this could be used to add an infinite effect by rerending nearly the entire scene at given intervals
-        // if (Math.abs((this.person_z)%40) <.2 ) {
-        //     /* 
-            
-        //     THOUGHTS
-        //         might need a this.xx function for each thing we want to put in the scene
-        //         so we can make it related to this.person_x
-        //         and it won't get overwritten each time display is called
-
-        //     WILL ALSO NEED TO RANDOMIZE PLACEMENT
-
-        //     TODO: scale as gets closer, rn it's all the same size
-        //     TODO: add hella more trees, cause only moving 2 back and forth isn't going to work
-        //         --> also need to scale
-            
-        //     */
-        //     this.bot_transform = this.bot_transform.times(Mat4.translation(0,0,-20));  
-        //     this.right_tree1 = this.right_tree1.times(Mat4.translation(0,0,-20));  
-        
-        // }
 
         this.draw_lightpost(context, program_state, temp_lightpost);
 
-        this.draw_tree(context, program_state, temp_tree_2);
-        this.draw_tree(context, program_state, this.right_tree1);
-        this.draw_tree(context, program_state, temp_tree_3);
-        this.draw_tree(context, program_state, temp_tree_4);
 
         // Draw more trees
         // bring them down so they're flush with walkway 
         trees.forEach(tree => {
-            let further_tree = tree.times(Mat4.translation(0, -5, -20));
+            this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)));
+            let further_tree = tree.times(Mat4.translation(0, -2.5, -20));
             this.draw_tree(context, program_state, further_tree);
-            further_tree = tree.times(Mat4.translation(0, -5, -30));
+            further_tree = tree.times(Mat4.translation(0, -2.5, -30));
             this.draw_tree(context, program_state, further_tree);
-            further_tree = tree.times(Mat4.translation(2, -5, -45));
+            further_tree = tree.times(Mat4.translation(2, -2.5, -45));
             this.draw_tree(context, program_state, further_tree);
         });
 
