@@ -522,18 +522,14 @@ export class BruinRun extends Base_Scene {
 
         
 
-        let temp_bench_location = Mat4.translation(-15,3,5);
-
-        let temp_lightpost = Mat4.translation(-15,7,0).times(Mat4.scale(.8,.8,.8));
+        let lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
         this.draw_walkway(context, program_state, walkway_transform);
 
 
 
         this.draw_person(context, program_state, this.person_transform);
-        this.draw_bench(context, program_state, temp_bench_location);
 
 
-        this.draw_lightpost(context, program_state, temp_lightpost);
 
 
         // Draw more trees
@@ -548,6 +544,31 @@ export class BruinRun extends Base_Scene {
             this.draw_tree(context, program_state, further_tree);
         });
 
+        for (let i = 1; i < 4; i++) {
+            this.draw_lightpost(context, program_state, lightpost_pos);
+            let move_lightpost = Mat4.translation(0,0,-40*i);
+            let flip_lightpost = Mat4.translation(31,0,-5);
+            this.draw_lightpost(context, program_state, lightpost_pos.times(move_lightpost));
+            this.draw_lightpost(context, program_state, lightpost_pos.times(flip_lightpost));
+            this.draw_lightpost(context, program_state, lightpost_pos.times(flip_lightpost).times(move_lightpost));
+
+        }
+
+        let bench_pos = Mat4.translation(-15,3,5);
+        for (let i = 0; i < 4; i++) {
+            this.draw_bench(context, program_state, bench_pos);
+            let move_bench = Mat4.translation(0,0,-20*i);
+            let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
+
+            this.draw_bench(context, program_state, bench_pos.times(move_bench));
+            this.draw_bench(context, program_state, bench_pos.times(flip_bench));
+            this.draw_bench(context, program_state, bench_pos.times(flip_bench).times(move_bench));
+
+
+        }
+
+        
+
 
        
 
@@ -555,7 +576,7 @@ export class BruinRun extends Base_Scene {
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t/2),0,-30);
+       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
 
 
