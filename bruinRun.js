@@ -204,11 +204,12 @@ export class BruinRun extends Base_Scene {
         this.detach_camera = false;
 
         // Why are some things here and some things in the Base_Scene constructor?
-        this.bot_transform = Mat4.translation(-3,4,0).times(Mat4.scale(1.4, 1.4, 1.4));
+        this.bot_transform = Mat4.translation(-3,4,0);
         this.flyerperson_transform = Mat4.translation(8,10,7);
         this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
 
         this.lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
+        this.rand_bot_pos = Math.floor(Math.random()*6);
 
     }
 
@@ -431,7 +432,7 @@ export class BruinRun extends Base_Scene {
         if(this.moveForward){
             // because inverted z axis 
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
-            this.person_z = this.person_z + -1; 
+            this.person_z = this.person_z -1; 
         }
         if(this.moveBackward){
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
@@ -662,12 +663,14 @@ export class BruinRun extends Base_Scene {
         }
 
        
-
+        if ( (Math.floor(this.person_z) % 30) == -11) {
+            this.rand_bot_pos = Math.floor(Math.random()*5)
+        }
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,-30);
+       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_bot_pos),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t));
