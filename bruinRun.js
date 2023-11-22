@@ -122,6 +122,9 @@ class Base_Scene extends Scene {
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
 
+        //keeps track of flyer person's locations
+        this.flyerperson_locations = new Map();
+
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -202,6 +205,7 @@ export class BruinRun extends Base_Scene {
 
         // Why are some things here and some things in the Base_Scene constructor?
         this.bot_transform = Mat4.translation(-3,4,0).times(Mat4.scale(1.4, 1.4, 1.4));
+        this.flyerperson_transform = Mat4.translation(8,10,7);
         this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
 
         this.lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
@@ -513,6 +517,74 @@ export class BruinRun extends Base_Scene {
         }
     }
 
+    draw_flyerperson(context, program_state, model_transform){
+         // Draws a flyer person at certain locations, just a rough draft version
+        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
+
+        // Check if there is a collision
+        //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
+
+        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
+
+        let person = {
+            head_transform: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(0, 0, 0)),
+            torso_transform: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(0,-2.5,0)),
+            arms_transformL: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(-1.5, -3, 0)),
+            arms_transformR: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(1.5, -3, 0)),
+            legs_transformL: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(-.5, -6.25, 0)),
+            legs_transformR: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(.5, -6.25, 0)),
+            flyer_transform: Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 5, 0)).times(Mat4.translation(1.5, -6, 0))
+        }
+
+        // Use custom transform_matrix to modify entire person at once
+        for (let matrix in person) { 
+            person[matrix] = person[matrix].times(model_transform); 
+        }
+
+        // Walking Animation Parameters
+        const x = program_state.animation_time / 1000;
+        let max_angle = Math.PI / 5;
+        let max_angle_arms = Math.PI/3;
+        let swing_seconds = 2;
+        let t = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x);
+        let t_arms = max_angle_arms * Math.sin((2 * Math.PI / swing_seconds) * x);
+        let t_reverse = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
+        let t_reverse_arms = max_angle_arms * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
+
+        // change this so it is conditional based on if the character is moving or not
+        // Walking Animation
+        person.arms_transformR = person.arms_transformR
+            .times(Mat4.translation(0, 1.75, 0))
+            .times(Mat4.rotation(t_reverse_arms, 1, 0, 0))
+            .times(Mat4.translation(0, -2, 0));
+        person.flyer_transform = person.arms_transformR
+            .times(Mat4.translation(0, -3, 0));
+        person.legs_transformL = person.legs_transformL
+            .times(Mat4.translation(0, 2.25, 0))
+            .times(Mat4.rotation(t_reverse, 1, 0, 0))
+            .times(Mat4.translation(0, -2.25, 0));         
+        person.legs_transformR = person.legs_transformR
+            .times(Mat4.translation(0, 2.25, 0))
+            .times(Mat4.rotation(t, 1, 0, 0))
+            .times(Mat4.translation(0, -2.25, 0));
+
+        person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
+        person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
+        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
+        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
+        person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.1, 1, 0.75));
+        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
+        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
+
+        this.shapes.sphere.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
+        this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.flyer_transform, this.materials.plastic.override(green));
+        this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
+    }
+
     display(context, program_state) {
         super.display(context, program_state);
 
@@ -597,7 +669,15 @@ export class BruinRun extends Base_Scene {
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-
+       
+        let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t));
+        this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
+        flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
+        this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
+        flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t));
+        this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
+        flyerperson_motion = Mat4.translation(52.5, 0 ,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
+        this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
 
 
        if(!this.detach_camera){
