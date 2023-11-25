@@ -97,8 +97,7 @@ class Base_Scene extends Scene {
         this.sky_transform = Mat4.translation(-5,15.5,-50).times(Mat4.scale(100,20,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
-                    // also used for collision detection
-                    //hopefully we can use it to add objects as the person progresses
+        this.person_y = 10;
 
         // for jumping mechanic
         this.isJumping = false;
@@ -118,6 +117,9 @@ class Base_Scene extends Scene {
         // to test flagship stuff DELELTE Later
         this.flagship_transform = 0; 
         this.key_check = true;
+        
+        // for landing on starships
+        this.on_starship = false; 
 
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
@@ -296,7 +298,11 @@ export class BruinRun extends Base_Scene {
 
         this.shapes.rectangle.draw(context, program_state, lightpost_transform.times(lightpost.banner1), this.materials.plastic.override( {color: banner_color}))
         this.shapes.rectangle.draw(context, program_state, lightpost_transform.times(lightpost.banner2), this.materials.plastic.override( {color: banner_color}))
+    }
 
+    draw_rectangle(context, program_state, model_transform){
+        const light_color = hex_color("#eae9a9");
+        this.shapes.walkway.draw(context, program_state, model_transform, this.materials.plastic.override( {color: light_color}));
     }
 
     draw_bench(context, program_state, bench_transform) {
@@ -394,13 +400,38 @@ export class BruinRun extends Base_Scene {
 
         // Jumping 
         if (this.isJumping){
-            this.jumpHeight += 1; 
-            // reached max jump height-> reset jump flag and height, later make it so the person falls back down
-            if (this.jumpHeight > 50){
-                this.isJumping = false; 
-                this.jumpHeight = 0;
+            //if the player is not over as starship
+            if (!this.on_starship){
+                this.jumpHeight +=1; 
+
+                // if jump is finished
+                if (this.jumpHeight > 50){
+                    this.isJumping = false; 
+                    this.jumpHeight = 0; 
+                }
+
+                // apply jump translation
+                model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/50), 0));
+                // update stored y 
+                this.person_y = model_transform[1][3];
             }
-            model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/50), 0));
+            else { // player is currently jumping over a starship 
+
+                if ((Math.round(this.person_y * 2) == 28) && (this.jumpHeight > 25)){
+                    console.log('he is on the thingy', this.person_y);
+                } else {
+                    this.jumpHeight +=1; 
+                    if (this.jumpHeight > 50){
+                        this.isJumping = false; 
+                        this.jumpHeight = 0; 
+                    }
+                }
+
+                // apply jump translation
+                model_transform = model_transform.times(Mat4.translation(0, 8 * Math.sin(Math.PI * this.jumpHeight/50), 0));
+                // update stored y 
+                this.person_y = model_transform[1][3];
+            }
         }
 
         const blue = hex_color("#1a9ffa"), yellow = hex_color("#fdc03a"), red = hex_color('#ff1401');
@@ -465,14 +496,14 @@ export class BruinRun extends Base_Scene {
             .times(Mat4.translation(0, 2, 0))
             .times(Mat4.rotation(t_reverse, 1, 0, 0))
             .times(Mat4.translation(0, -2, 0));
-        person.legs_transformL = person.legs_transformL
-            .times(Mat4.translation(0, 2.25, 0))
-            .times(Mat4.rotation(t_reverse, 1, 0, 0))
-            .times(Mat4.translation(0, -2.25, 0));         
-        person.legs_transformR = person.legs_transformR
-            .times(Mat4.translation(0, 2.25, 0))
-            .times(Mat4.rotation(t, 1, 0, 0))
-            .times(Mat4.translation(0, -2.25, 0));
+        // person.legs_transformL = person.legs_transformL
+        //     .times(Mat4.translation(0, 2.25, 0))
+        //     .times(Mat4.rotation(t_reverse, 1, 0, 0))
+        //     .times(Mat4.translation(0, -2.25, 0));         
+        // person.legs_transformR = person.legs_transformR
+        //     .times(Mat4.translation(0, 2.25, 0))
+        //     .times(Mat4.rotation(t, 1, 0, 0))
+        //     .times(Mat4.translation(0, -2.25, 0));
 
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
         person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
@@ -483,6 +514,8 @@ export class BruinRun extends Base_Scene {
 
         let rounded_person_z = Math.round(model_transform[2][3]);
         let collision = false; 
+        this.on_starship = false; 
+
         // check within a 4 unit radius if there is a collision
         for(let i = 0; i < 8; i++){
             const key = rounded_person_z -4 + i; 
@@ -494,7 +527,19 @@ export class BruinRun extends Base_Scene {
                 // check if collision within 3 unit radius 
                 for(let i = 0; i < 6; i++){
                     if(rounded_person_x - 3 + i === starship_x){
+                        // collision detected assuming not jumping 
                         collision = true; 
+                        if (this.isJumping){
+                            //console.log('collision but jumping');
+                            // What height does this correlate to? 
+                            //if (this.jumpHeight > 10){
+                            if ( this.person_y > 13) {
+                                console.log('jumping over that jawn', this.person_y);
+                                collision = false; 
+                                this.on_starship = true; 
+                            }
+                        }
+                        //collision = true; 
                     }
                 }
             }
@@ -614,8 +659,6 @@ export class BruinRun extends Base_Scene {
 
         let trees = [tree1_pos, tree2_pos];
 
-        
-
         this.draw_walkway(context, program_state, walkway_transform);
         this.draw_person(context, program_state, this.person_transform);
 
@@ -662,9 +705,10 @@ export class BruinRun extends Base_Scene {
         }
 
        
-
+        //this.draw_rectangle(context, program_state, this.bot_transform.times(Mat4.translation(0, 2, 0)));
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
-       this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       //stationary starship for collision testing
+       this.draw_starship(context, program_state, this.bot_transform);
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,-30);
