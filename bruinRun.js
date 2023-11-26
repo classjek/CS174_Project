@@ -608,6 +608,11 @@ export class BruinRun extends Base_Scene {
        // Check if there is a collision
        //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
 
+       let temp_trans = Mat4.translation(0,0,-7);
+
+       //jake: If you want it rotated, add this line in
+       //temp_trans = temp_trans.times(Mat4.translation(0,0,14)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
 
        let person = {
@@ -662,14 +667,14 @@ export class BruinRun extends Base_Scene {
        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
-       this.shapes.sphere.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
-       this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
-       this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
-       this.shapes.cube.draw(context, program_state, person.flyer_transform, this.materials.plastic.override(green));
-       this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
-       this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(white));
-       this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
-   }
+       this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, temp_trans.times(person.torso_transform), this.materials.plastic.override(black));
+        this.shapes.cube.draw(context, program_state, temp_trans.times(person.arms_transformR), this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, temp_trans.times(person.flyer_transform), this.materials.plastic.override(green));
+        this.shapes.cube.draw(context, program_state, temp_trans.times(person.arms_transformL), this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, temp_trans.times(person.legs_transformR), this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, temp_trans.times(person.legs_transformL), this.materials.plastic.override(white));
+    }
 
     display(context, program_state) {
         super.display(context, program_state);
