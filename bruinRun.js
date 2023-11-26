@@ -1,26 +1,14 @@
 import {defs, tiny} from './examples/common.js';
 
 const {
-    Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
 } = tiny;
 
-class Cube extends Shape {
-    constructor() {
-        super("position", "normal",);
-        // Loop 3 times (for each axis), and inside loop twice (for opposing cube sides):
-        this.arrays.position = Vector3.cast(
-            [-1, -1, -1], [1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, -1], [-1, 1, -1], [1, 1, 1], [-1, 1, 1],
-            [-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [-1, 1, 1], [1, -1, 1], [1, -1, -1], [1, 1, 1], [1, 1, -1],
-            [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, -1], [-1, -1, -1], [1, 1, -1], [-1, 1, -1]);
-        this.arrays.normal = Vector3.cast(
-            [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0],
-            [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0],
-            [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1]);
-        // Arrange the vertices into a square shape in texture space too:
-        this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
-            14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
-    }
-}
+const {Cube, Textured_Phong} = defs
+/* 
+Note about texture: I found it only really works w/ library shapes like cube and cylinder
+and not with what we defined below (like rectangle)
+*/
 
 //NEW SHAPES
 class Rectangle extends Shape {
@@ -94,7 +82,7 @@ class Base_Scene extends Scene {
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
         this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
-        this.sky_transform = Mat4.translation(-5,15.5,-50).times(Mat4.scale(100,20,1));
+        this.sky_transform = Mat4.translation(-5,25,-50).times(Mat4.scale(70,40,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
         this.person_y = 10;
@@ -188,6 +176,10 @@ class Base_Scene extends Scene {
         this.materials = {
             plastic: new Material(new defs.Phong_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
+            sky_texture: new Material(new defs.Textured_Phong(),
+                {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
+                texture: new Texture("assets/sky.jpg", "NEAREST")}),
+        
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -380,14 +372,14 @@ export class BruinRun extends Base_Scene {
 
         // Wouldn't it be easier to just move this with person_z?  -jake
         // Removed sky for now but we should implement something like this in later
-        // if (this.running) {
-        //     this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
-        // }
+        if (this.running) {
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
+        }
 
         // Draw walkway 
         this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
         // Draw sky background
-       // this.shapes.rectangle.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.plastic.override( {color: sky_color}))
+         this.shapes.cube.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.sky_texture);
 
     }
 
@@ -715,11 +707,11 @@ export class BruinRun extends Base_Scene {
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        
-        let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4));
+        let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
-        flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2));
+        flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5, 0 ,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
