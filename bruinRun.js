@@ -211,7 +211,7 @@ export class BruinRun extends Base_Scene {
         this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
 
         this.lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
-        this.rand_bot_pos = Math.floor(Math.random()*6);
+        this.rand_position = Math.floor(Math.random()*6) + 1;
 
     }
 
@@ -712,14 +712,14 @@ export class BruinRun extends Base_Scene {
        this.draw_starship(context, program_state, this.bot_transform);
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_bot_pos),0,-30);
+       bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        
-        let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t));
+        let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
-        flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
+        flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
-        flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t));
+        flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5, 0 ,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
