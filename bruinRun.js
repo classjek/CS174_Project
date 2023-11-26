@@ -11,23 +11,6 @@ and not with what we defined below (like rectangle)
 */
 
 //NEW SHAPES
-class Rectangle extends Shape {
-    constructor() {
-        super("position", "normal",);
-        // Loop 3 times (for each axis), and inside loop twice (for opposing cube sides):
-        this.arrays.position = Vector3.cast(
-            [-1, -2, 1], [1, -2, 1], [-1, -2, 1], [1, -2, 1], [1, 2, 1], [-1, 2, -1], [1, 2, 1], [-1, 2, 1],
-            [-1, -2, -1], [-1, -2, 1], [-1, 2, -1], [-1, 2, 1], [1, -2, 1], [1, -2, -1], [1, 2, 1], [1, 2, -1],
-            [-1, -2, 1], [1, -2, 1], [-1, 2, 1], [1, 2, 1], [1, -2, -1], [-1, -2, -1], [1, 2, -1], [-1, 2, -1]);
-        this.arrays.normal = Vector3.cast(
-            [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0],
-            [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0],
-            [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1]);
-        // Arrange the vertices into a square shape in texture space too:
-        this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
-            14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
-    }
-}
 
 class Walk extends Shape {
     constructor() {
@@ -154,7 +137,6 @@ class Base_Scene extends Scene {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             'cube': new Cube(),
-            'rectangle': new Rectangle(),
             'walkway': new Walk(),
             'trapezoid': new Trapezoid(),
             'cylinder': new defs.Cylindrical_Tube(10,10),
@@ -282,20 +264,15 @@ export class BruinRun extends Base_Scene {
         let lightpost = {
             pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.4,.4,14,1)),
             light: Mat4.translation(0,7,0).times(Mat4.rotation(Math.PI,0,-1,1)).times(Mat4.scale(1.2,1.3,1.5)),
-            banner1: Mat4.translation(1.7,4,0).times(Mat4.scale(1.2,1,.05)),
-            banner2: Mat4.translation(-1.7,4,0).times(Mat4.scale(1.2,1,.05)),
+            banner1: Mat4.translation(1.7,4,0).times(Mat4.scale(1.2,2,.05)),
+            banner2: Mat4.translation(-1.7,4,0).times(Mat4.scale(1.2,2,.05)),
         }
 
         this.shapes.cylinder.draw(context, program_state, lightpost_transform.times(lightpost.pole), this.materials.plastic.override( {color: pole_color}))
         this.shapes.cone.draw(context, program_state, lightpost_transform.times(lightpost.light), this.materials.plastic.override( {color: light_color}))
 
-        this.shapes.rectangle.draw(context, program_state, lightpost_transform.times(lightpost.banner1), this.materials.plastic.override( {color: banner_color}))
-        this.shapes.rectangle.draw(context, program_state, lightpost_transform.times(lightpost.banner2), this.materials.plastic.override( {color: banner_color}))
-    }
-
-    draw_rectangle(context, program_state, model_transform){
-        const light_color = hex_color("#eae9a9");
-        this.shapes.walkway.draw(context, program_state, model_transform, this.materials.plastic.override( {color: light_color}));
+        this.shapes.cube.draw(context, program_state, lightpost_transform.times(lightpost.banner1), this.materials.plastic.override( {color: banner_color}))
+        this.shapes.cube.draw(context, program_state, lightpost_transform.times(lightpost.banner2), this.materials.plastic.override( {color: banner_color}))
     }
 
     draw_bench(context, program_state, bench_transform) {
@@ -348,7 +325,7 @@ export class BruinRun extends Base_Scene {
             wheel3: Mat4.translation(.8,-1,1.1).times(Mat4.scale(.5,.5,.1)),
             pole: Mat4.rotation(Math.PI/2,5,0,.5).times(Mat4.scale(.1,.1,5)).times(Mat4.translation(-6,0,-.4)),
             flag: Mat4.translation(-.8,4.3,0).times(Mat4.rotation(Math.PI, -1,0,1)).times(Mat4.scale(.1,.6,.5)),
-            square: Mat4.translation(0,.35,1.4).times(Mat4.scale(.8,.2,.1)),
+            square: Mat4.translation(0,.35,1.4).times(Mat4.scale(.8,.4,.1)),
         }
         
         this.shapes.bot.draw(context, program_state, bot_transform.times(starship.body), this.materials.plastic.override( {color: body_color }))
@@ -361,7 +338,7 @@ export class BruinRun extends Base_Scene {
         this.shapes.cylinder.draw(context, program_state, bot_transform.times(starship.pole), this.materials.plastic.override( {color: wheel_color}))
         this.shapes.cone.draw(context, program_state, bot_transform.times(starship.flag), this.materials.plastic.override( {color: flag_color}))
 
-        this.shapes.rectangle.draw(context, program_state, bot_transform.times(starship.square), this.materials.plastic.override( {color: wheel_color}))
+        this.shapes.cube.draw(context, program_state, bot_transform.times(starship.square), this.materials.plastic.override( {color: wheel_color}))
 
     }   
 
@@ -699,7 +676,6 @@ export class BruinRun extends Base_Scene {
         }
 
        
-        //this.draw_rectangle(context, program_state, this.bot_transform.times(Mat4.translation(0, 2, 0)));
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
        //stationary starship for collision testing
        this.draw_starship(context, program_state, this.bot_transform);
