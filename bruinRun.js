@@ -82,7 +82,7 @@ class Base_Scene extends Scene {
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
         this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
-        this.sky_transform = Mat4.translation(-5,25,-50).times(Mat4.scale(70,40,1));
+        this.sky_transform = Mat4.translation(-5,25,-60).times(Mat4.scale(70,40,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
         this.person_y = 10;
@@ -369,12 +369,8 @@ export class BruinRun extends Base_Scene {
         const path_color = hex_color("#bebebe");
         const sky_color = hex_color("#1a9ffa");
 
+       //TODO: Move sky w/ person
 
-        // Wouldn't it be easier to just move this with person_z?  -jake
-        // Removed sky for now but we should implement something like this in later
-        if (this.running) {
-            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
-        }
 
         // Draw walkway 
         this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
@@ -456,10 +452,14 @@ export class BruinRun extends Base_Scene {
             // because inverted z axis 
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
             this.person_z = this.person_z -1; 
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-1));
+
         }
         if(this.moveBackward){
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
             this.person_z = this.person + 1; 
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,1));
+
         }
         if(this.running){
             // add more to this function once collision detection is done
@@ -469,6 +469,7 @@ export class BruinRun extends Base_Scene {
                 // Last parameter dictates speed
                 this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
                 this.person_z = this.person_z - 0.2;
+                this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
             }
         }
 
