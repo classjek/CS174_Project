@@ -155,6 +155,11 @@ class Base_Scene extends Scene {
             sky_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/sky.jpg", "NEAREST")}),
+            start_screen: new Material(new defs.Textured_Phong(),
+            {
+                color: hex_color("#000000"),
+                ambient: 1, diffusivity: 0.1, specularity: 0.1,
+                texture: new Texture("assets/Bruinwalk Start.png", "NEAREST")}),
         
         };
         // The white material and basic shader are used for drawing the outline.
@@ -213,6 +218,9 @@ export class BruinRun extends Base_Scene {
         })
         this.key_triggered_button("Lock Camera", ["1"], () =>{
             this.detach_camera = false;
+        })
+        this.key_triggered_button("Start Game", ["Enter"], () =>{
+            this.start_game = true;
         })
     }
 
@@ -771,11 +779,37 @@ export class BruinRun extends Base_Scene {
         }
     }
 
+    draw_start_screen(context, program_state, model_transform = Mat4.identity()){
+        model_transform = model_transform.times(Mat4.scale(10, 10, 0.5))
+        this.shapes.cube.draw(context, program_state, model_transform, this.materials.start_screen);
+    }
+
     display(context, program_state) {
         super.display(context, program_state);
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
 
+        if(!this.start_game){
+            const initial_camera_position = Mat4.translation(0, 0, -30);
+
+            if (!context.scratchpad.controls) {
+                this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+                // Define the global camera and projection matrices, which are stored in program_state.
+                program_state.set_camera(initial_camera_position);
+            }
+    
+            program_state.projection_transform = Mat4.perspective(
+                Math.PI / 4, context.width / context.height, 1, 100);
+    
+            // *** Lights: *** Values of vector or point lights.
+            const light_position = vec4(5, 30, 20, 1);
+            program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+            let t = program_state.animation_time / 1000;
+    
+            // Player
+            this.draw_start_screen(context, program_state, Mat4.identity())
+        }
+        else {
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         const initial_camera_position = Mat4.translation(5, -10, -30);
 
@@ -831,5 +865,6 @@ export class BruinRun extends Base_Scene {
             //Use the default camera position
             program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));       
        }
+    }
     }
 }
