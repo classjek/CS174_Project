@@ -630,27 +630,18 @@ export class BruinRun extends Base_Scene {
                     flyerP.progress += 1; 
                 } else {
                     if (flyerP.turned == false){
-                        console.log('turn that guy');
-                        //model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 1).times(Mat4.rotation(Math.PI/2, 0, 1, 0)));
-                        //model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 1)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
                         model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
                         flyerP.turned = true; 
                     }
                     model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
-                    //model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 1)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
                 }
                 // update map with new information
                 this.flyerperson_info.set(key, flyerP); 
-                //console.log('why not change?', oldProgress, flyerP.progress);
             }
         }
 
-        // confuzed about this 
+        // remove this eventually 
        let temp_trans = Mat4.translation(0,0,-7);
-       //let temp_trans = Mat4.translation(0, 0, 0);
-
-       //jake: If you want it rotated, add this line in
-       //temp_trans = temp_trans.times(Mat4.translation(0,0,14)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
 
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
        
@@ -664,20 +655,22 @@ export class BruinRun extends Base_Scene {
            flyer_transform: Mat4.identity().times(Mat4.translation(0, -6, 1.5))
        }
 
-       model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
        // Use custom transform_matrix to modify entire person at once
        for (let matrix in person) { 
             // if turned, keep turned, still figuring out how to turn 
-            if(this.flyerperson_info.has(key)){
-                if(this.flyerperson_info.get(key).turned == true){
-                    console.log('okay it is true');
-                    // here I want to translate each element around the y axis by 90 degrees, it should already be at the origin. How do I do this? 
-                    //temp_trans = temp_trans.times(Mat4.translation(0,0,14)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
-                    //model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
-                    //person[matrix] = person[matrix].times(Mat4.rotation(Math.PI/2, 0, 1, 0));
-                }
+            if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
+                    person = {
+                        head_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, 0, 0)),
+                        torso_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0,-2.5,0)),
+                        arms_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -3, -1.5)),
+                        arms_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -3, 1.5)),
+                        legs_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6.25, -0.5)),
+                        legs_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6.25, 0.5)),
+                        flyer_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6, 1.5))
+                    }
+            } else {
+                person[matrix] = person[matrix].times(model_transform); 
             }
-           person[matrix] = person[matrix].times(model_transform); 
        }
 
        // Walking Animation Parameters
@@ -732,8 +725,6 @@ export class BruinRun extends Base_Scene {
         let tree2_pos = Mat4.translation(-21, 13, 1,1);
 
         let trees = [tree1_pos, tree2_pos];
-
-
 
 
         // Draw more trees
