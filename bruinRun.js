@@ -427,13 +427,13 @@ export class BruinRun extends Base_Scene {
         if(this.moveForward){
             // because inverted z axis 
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
-            this.person_z = this.person_z -1; 
+            this.person_z = this.person_transform[2][3]; 
             this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-1));
 
         }
         if(this.moveBackward){
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
-            this.person_z = this.person + 1; 
+            this.person_z = this.person_transform[2][3]; 
             this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,1));
 
         }
@@ -444,7 +444,7 @@ export class BruinRun extends Base_Scene {
             if(this.runDist < 500){
                 // Last parameter dictates speed
                 this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
-                this.person_z = this.person_z - 0.2;
+                this.person_z = this.person_transform[2][3];
                 this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
             }
         }
@@ -675,6 +675,32 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, temp_trans.times(person.legs_transformL), this.materials.plastic.override(white));
     }
 
+    draw_scene(context, program_state, scene_translation = Mat4.identity()) {
+        let t = program_state.animation_time / 1000;
+
+        let tree1_pos = Mat4.translation(10,13,1,1);
+        let tree2_pos = Mat4.translation(-21, 13, 1,1);
+
+        let trees = [tree1_pos, tree2_pos];
+
+
+
+
+        // Draw more trees
+        trees.forEach(tree => {
+            let tree_scale = Mat4.scale(1.2,1.2,1.2);
+            this.draw_tree(context, program_state, tree.times(scene_translation).times(Mat4.translation(0,-2.5,0)).times(tree_scale));
+            let further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -60)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+        });
+    }
+
     display(context, program_state) {
         super.display(context, program_state);
 
@@ -699,34 +725,38 @@ export class BruinRun extends Base_Scene {
         let t = program_state.animation_time / 1000;
 
         let walkway_transform = Mat4.translation(0,0,-10);
-        let tree1_pos = Mat4.translation(10,13,1,1);
-        let tree2_pos = Mat4.translation(-21, 13, 1,1);
+        // let tree1_pos = Mat4.translation(10,13,1,1);
+        // let tree2_pos = Mat4.translation(-21, 13, 1,1);
 
-        let trees = [tree1_pos, tree2_pos];
+        // let trees = [tree1_pos, tree2_pos];
 
         this.draw_walkway(context, program_state, walkway_transform);
         this.draw_person(context, program_state, this.person_transform);
 
+        let temp = Mat4.translation(0,0,0);
+
+        this.draw_scene(context, program_state, temp);
+        if ( this.person_z < -10) {
+            temp = Mat4.translation(0,0,-80);
+            this.draw_scene(context, program_state, temp);
+        }
 
 
 
-        // Draw more trees
-        trees.forEach(tree => {
-            let tree_scale = Mat4.scale(1.2,1.2,1.2);
-            this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)).times(tree_scale));
-            let further_tree = tree.times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
-            this.draw_tree(context, program_state, further_tree);
-            further_tree = tree.times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
-            this.draw_tree(context, program_state, further_tree);
-            further_tree = tree.times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
-            this.draw_tree(context, program_state, further_tree);
-        });
 
-        //TODO: Figure out how to make it not slide, has something to do w/ the z param in translation
-        // if ( (Math.floor(this.person_z) % 100) == -50) {
-        //     console.log( Math.floor(this.person_z) );
-        //     this.lightpost_pos = this.lightpost_pos.times(Mat4.translation(0,0,-20));
-        // }
+
+        // // Draw more trees
+        // trees.forEach(tree => {
+        //     let tree_scale = Mat4.scale(1.2,1.2,1.2);
+        //     this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)).times(tree_scale));
+        //     let further_tree = tree.times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
+        //     this.draw_tree(context, program_state, further_tree);
+        //     further_tree = tree.times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
+        //     this.draw_tree(context, program_state, further_tree);
+        //     further_tree = tree.times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
+        //     this.draw_tree(context, program_state, further_tree);
+        // });
+
 
 
         for (let i = 1; i < 6; i++) {
