@@ -446,13 +446,10 @@ export class BruinRun extends Base_Scene {
         if(this.running){
             // add more to this function once collision detection is done
             this.runDist +=1; 
-            // limit dictates run distance 
-            if(this.runDist < 500){
-                // Last parameter dictates speed
-                this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
+            // translate sky and person
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
                 this.person_z = this.person_transform[2][3];
                 this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
-            }
         }
 
         // Walking Animation Parameters
@@ -887,7 +884,6 @@ export class BruinRun extends Base_Scene {
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-       
        
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
