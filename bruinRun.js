@@ -88,6 +88,8 @@ class Base_Scene extends Scene {
         // to test flagship stuff DELELTE Later
         this.flagship_transform = 0; 
         this.key_check = true;
+        this.before = false;
+        this.after = false; 
         
         // for landing on starships
         this.on_starship = false; 
@@ -96,7 +98,7 @@ class Base_Scene extends Scene {
         this.starship_locations = new Map();
 
         //keeps track of flyer person's locations
-        this.flyerperson_locations = new Map();
+        this.flyerperson_info = new Map();
 
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
@@ -600,20 +602,58 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
     }
 
-    draw_flyerperson2(context, program_state, model_transform){
+    draw_flyerperson2(context, program_state, model_transform, key){
         // Draws a flyer person at certain locations, just a rough draft version
        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
-       // Check if there is a collision
-       //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
 
+       // kind of forgot what this map is for
+    //    this.flyerperson_locations.set(key, false);
+    //    this.flyerperson_info.set(key, { startMove: false, progress: 0});
+
+    //    if(this.flyerperson_key)
+
+        // check if the player is within a certain distance
+        if( (this.person_z - model_transform[2][3]) < 5){
+            // if not in map and in range
+            // if (!target.has(key))
+            if(!this.flyerperson_info.has(key)){
+                // add flyerperson2 to map
+                console.log('initialize map');
+                this.flyerperson_info.set(key, {progress: 0, turned: false}); 
+            } else { // if they are initialized -> movement cycle has started 
+                let flyerP = this.flyerperson_info.get(key);
+                //let oldProgress = flyerP.progress;
+                if ( flyerP.turned == false && flyerP.progress < 20){
+                    // translate that guy
+                    model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0));
+                    flyerP.progress += 1; 
+                } else {
+                    if (flyerP.turned == false){
+                        console.log('turn that guy');
+                        //model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 1).times(Mat4.rotation(Math.PI/2, 0, 1, 0)));
+                        //model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 1)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+                        model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
+                        flyerP.turned = true; 
+                    }
+                    model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
+                    //model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 1)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+                }
+                // update map with new information
+                this.flyerperson_info.set(key, flyerP); 
+                //console.log('why not change?', oldProgress, flyerP.progress);
+            }
+        }
+
+        // confuzed about this 
        let temp_trans = Mat4.translation(0,0,-7);
+       //let temp_trans = Mat4.translation(0, 0, 0);
 
        //jake: If you want it rotated, add this line in
        //temp_trans = temp_trans.times(Mat4.translation(0,0,14)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
 
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
-
+       
        let person = {
            head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
            torso_transform: Mat4.identity().times(Mat4.translation(0,-2.5,0)),
@@ -624,9 +664,19 @@ export class BruinRun extends Base_Scene {
            flyer_transform: Mat4.identity().times(Mat4.translation(0, -6, 1.5))
        }
 
-       model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 5, 0));
+       model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
        // Use custom transform_matrix to modify entire person at once
        for (let matrix in person) { 
+            // if turned, keep turned, still figuring out how to turn 
+            if(this.flyerperson_info.has(key)){
+                if(this.flyerperson_info.get(key).turned == true){
+                    console.log('okay it is true');
+                    // here I want to translate each element around the y axis by 90 degrees, it should already be at the origin. How do I do this? 
+                    //temp_trans = temp_trans.times(Mat4.translation(0,0,14)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+                    //model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+                    //person[matrix] = person[matrix].times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+                }
+            }
            person[matrix] = person[matrix].times(model_transform); 
        }
 
@@ -772,7 +822,8 @@ export class BruinRun extends Base_Scene {
        
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
-        this.draw_flyerperson2(context, program_state, this.flyerperson_transform);
+        // be warned, for collision, flyerperson2 requires the input of a key, don'tdo any duplicates 
+        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -5)), 2);
         flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
