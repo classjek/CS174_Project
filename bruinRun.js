@@ -61,6 +61,12 @@ class Base_Scene extends Scene {
 
         // Initialize person translation here so position isn't continuously reset 
         this.person_transform = Mat4.translation(0, 10, 10);
+
+        // Initialize walkway so it is one big piece that the character will walk over
+        // A little confused here, is this order correct? 
+        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
+        this.sky_transform = Mat4.translation(-5,25,-60).times(Mat4.scale(70,40,1));
+
         this.person_z = 10;  //used to identify WHERE the person is in the scene
         this.person_y = 10;
 
@@ -73,15 +79,17 @@ class Base_Scene extends Scene {
         this.moveRight = false; 
         
         // to test forward/back movement. Will eventually be automatic
-        // this.moveForward = false;
-        // this.moveBackward = false; 
+        this.moveForward = false;
+        this.moveBackward = false; 
 
-        // this.running = false; 
-        // this.runDist = 0; 
+        this.running = false; 
+        this.runDist = 0; 
 
         // to test flagship stuff DELELTE Later
         this.flagship_transform = 0; 
         this.key_check = true;
+        this.before = false;
+        this.after = false; 
         
         // for landing on starships
         this.on_starship = false; 
@@ -89,8 +97,9 @@ class Base_Scene extends Scene {
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
 
-        //keeps track of flyer person's locations
-        this.flyerperson_locations = new Map();
+        //keeps track of flyer persons
+        // This map currently has two elements, one to keep track of the flyerperson's x movement and the other to keep track of their rotation
+        this.flyerperson_info = new Map();
 
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
@@ -100,12 +109,12 @@ class Base_Scene extends Scene {
             if (event.key === 'a'){
                 this.moveLeft = true; 
             }
-            // if(event.key === 'w'){
-            //     this.moveForward = true; 
-            // }
-            // if(event.key === 's'){
-            //     this.moveBackward = true; 
-            // }
+            if(event.key === 'w'){
+                this.moveForward = true; 
+            }
+            if(event.key === 's'){
+                this.moveBackward = true; 
+            }
             if (event.key === 'Escape') {
                 this.detach_camera = true;
             }
@@ -120,12 +129,12 @@ class Base_Scene extends Scene {
             if (event.key === 'a'){
                 this.moveLeft = false; 
             }
-            // if(event.key === 'w'){
-            //     this.moveForward = false; 
-            // }
-            // if(event.key === 's'){
-            //     this.moveBackward = false; 
-            // }
+            if(event.key === 'w'){
+                this.moveForward = false; 
+            }
+            if(event.key === 's'){
+                this.moveBackward = false; 
+            }
         })
 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
@@ -156,11 +165,10 @@ class Base_Scene extends Scene {
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/sky.jpg", "NEAREST")}),
             start_screen: new Material(new defs.Textured_Phong(),
-            {
-                color: hex_color("#000000"),
-                ambient: 1, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/Bruinwalk Start.png", "NEAREST")}),
-        
+                {
+                    color: hex_color("#000000"),
+                    ambient: 1, diffusivity: 0.1, specularity: 0.1,
+                    texture: new Texture("assets/Bruinwalk Start.png", "NEAREST")}),
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -181,8 +189,8 @@ export class BruinRun extends Base_Scene {
         // Why are some things here and some things in the Base_Scene constructor?
         this.bot_transform = Mat4.translation(-3,4,0);
         this.flyerperson_transform = Mat4.translation(8,10,7);
-        this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
 
+        this.lightpost_pos = Mat4.translation(-18,9,0).times(Mat4.scale(1.5,1.5,1.5));
         this.rand_position = Math.floor(Math.random()*6) + 1;
 
     }
@@ -206,12 +214,12 @@ export class BruinRun extends Base_Scene {
                 this.moveRight = true; 
             }
         })
-        // this.key_triggered_button("Forward", ["w"], () => {
-        //     this.moveForward = true; 
-        // })
-        // this.key_triggered_button("RUN", ["q"], () => {
-        //     this.running = !this.running; 
-        // })
+        this.key_triggered_button("Forward", ["w"], () => {
+            this.moveForward = true; 
+        })
+        this.key_triggered_button("RUN", ["q"], () => {
+            this.running = !this.running; 
+        })
 
         this.key_triggered_button("Unlock Camera", ["Escape"], () =>{
             this.detach_camera = true;
@@ -299,6 +307,8 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_back), this.materials.plastic.override( {color: bench_color}))
         this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_bottom), this.materials.plastic.override( {color: bench_color}))
         this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_pole), this.materials.plastic.override( {color: bench_color}))
+
+
     }
 
     draw_starship(context, program_state, bot_transform) {
@@ -341,35 +351,23 @@ export class BruinRun extends Base_Scene {
 
     }   
 
-    draw_walkway(context, program_state, walkway_transform = Mat4.idenitty()) { 
-        // Inner Walkway
-        let in_walkway_transform = Mat4.identity().times(Mat4.translation(0, 1.5, -25))
-            .times(walkway_transform)
-            .times(Mat4.rotation(Math.PI/2, 1, 0, 0)) 
-            .times(Mat4.scale(13, 40, .25));
-        const in_color = hex_color("#bebebe");
-        this.shapes.cube.draw(context, program_state, in_walkway_transform, this.materials.plastic.override({color: in_color}));
-        
-        // Outer Walkway (Ground)
-        let out_walkway_transform = Mat4.identity().times(Mat4.translation(0, 1, -25))
-            .times(walkway_transform)
-            .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
-            .times(Mat4.scale(80, 40, .25));
-        const out_color = hex_color("#aba095");
-        this.shapes.cube.draw(context, program_state, out_walkway_transform, this.materials.plastic.override({color: out_color}));
+    draw_walkway(context, program_state, walkway_transform) {
+        const path_color = hex_color("#bebebe");
+        const sky_color = hex_color("#1a9ffa");
 
-        // Sky Background
-        let sky_transform = Mat4.identity().times(Mat4.translation(0, 25, -70)).times(Mat4.scale(80, 40, .25));
-        this.shapes.cube.draw(context, program_state, sky_transform, this.materials.sky_texture);
+       //TODO: Move sky w/ person
+
+
+        // Draw walkway 
+        this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
+        // Draw sky background
+         this.shapes.cube.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.sky_texture);
+
     }
 
     draw_person(context, program_state, model_transform = Mat4.identity()) {
         // Draws a person at the origin, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
-
-        // Check if there is a collision
-        //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
-
 
         // Jumping 
         if (this.isJumping){
@@ -432,30 +430,30 @@ export class BruinRun extends Base_Scene {
         if(this.moveLeft){
             this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
         }
-        // if(this.moveForward){
-        //     // because inverted z axis 
-        //     this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
-        //     this.person_z = this.person_z -1; 
-        //     //this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-1));
+        if(this.moveForward){
+            // because inverted z axis 
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
+            this.person_z = this.person_transform[2][3]; 
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-1));
 
-        // }
-        // if(this.moveBackward){
-        //     this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
-        //     this.person_z = this.person + 1; 
-        //     //this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,1));
+        }
+        if(this.moveBackward){
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
+            this.person_z = this.person_transform[2][3]; 
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,1));
 
-        // }
-        // if(this.running){
-        //     // add more to this function once collision detection is done
-        //     this.runDist +=1; 
-        //     // limit dictates run distance 
-        //     if(this.runDist < 500){
-        //         // Last parameter dictates speed
-        //         this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
-        //         this.person_z = this.person_z - 0.2;
-        //         this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
-        //     }
-        // }
+        }
+        if(this.running){
+            // add more to this function once collision detection is done
+            this.runDist +=1; 
+            // limit dictates run distance 
+            if(this.runDist < 500){
+                // Last parameter dictates speed
+                this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
+                this.person_z = this.person_transform[2][3];
+                this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
+            }
+        }
 
         // Walking Animation Parameters
         const x = program_state.animation_time / 1000;
@@ -464,6 +462,7 @@ export class BruinRun extends Base_Scene {
         let t = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x);
         let t_reverse = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
 
+        // change this so it is conditional based on if the character is moving or not
         // Walking Animation
         person.arms_transformL = person.arms_transformL
             .times(Mat4.translation(0, 2, 0))
@@ -473,14 +472,16 @@ export class BruinRun extends Base_Scene {
             .times(Mat4.translation(0, 2, 0))
             .times(Mat4.rotation(t_reverse, 1, 0, 0))
             .times(Mat4.translation(0, -2, 0));
-        person.legs_transformL = person.legs_transformL
-            .times(Mat4.translation(0, 2.25, 0))
-            .times(Mat4.rotation(t_reverse, 1, 0, 0))
-            .times(Mat4.translation(0, -2.25, 0));         
-        person.legs_transformR = person.legs_transformR
-            .times(Mat4.translation(0, 2.25, 0))
-            .times(Mat4.rotation(t, 1, 0, 0))
-            .times(Mat4.translation(0, -2.25, 0));
+            //eventually add this back in
+            // it is just hard to test collision when that dude is always moving
+        // person.legs_transformL = person.legs_transformL
+        //     .times(Mat4.translation(0, 2.25, 0))
+        //     .times(Mat4.rotation(t_reverse, 1, 0, 0))
+        //     .times(Mat4.translation(0, -2.25, 0));         
+        // person.legs_transformR = person.legs_transformR
+        //     .times(Mat4.translation(0, 2.25, 0))
+        //     .times(Mat4.rotation(t, 1, 0, 0))
+        //     .times(Mat4.translation(0, -2.25, 0));
 
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
         person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
@@ -493,7 +494,8 @@ export class BruinRun extends Base_Scene {
         let collision = false; 
         this.on_starship = false; 
 
-        // check within a 4 unit radius if there is a collision
+        // Check Staship Collisions //
+        //    check within a 4 unit radius if there is a collision
         for(let i = 0; i < 8; i++){
             const key = rounded_person_z -4 + i; 
             // check if key-value pair exists in starship_locations, assign to starship_x
@@ -503,20 +505,14 @@ export class BruinRun extends Base_Scene {
 
                 // check if collision within 3 unit radius 
                 for(let i = 0; i < 6; i++){
-                    if(rounded_person_x - 3 + i === starship_x){
-                        // collision detected assuming not jumping 
+                    if(rounded_person_x - 3 + i === starship_x){ 
                         collision = true; 
                         if (this.isJumping){
-                            //console.log('collision but jumping');
-                            // What height does this correlate to? 
-                            //if (this.jumpHeight > 10){
                             if ( this.person_y > 13) {
-                                console.log('jumping over that jawn', this.person_y);
                                 collision = false; 
                                 this.on_starship = true; 
                             }
                         }
-                        //collision = true; 
                     }
                 }
             }
@@ -607,20 +603,49 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
     }
 
-    draw_flyerperson2(context, program_state, model_transform){
+    draw_flyerperson2(context, program_state, model_transform, key){
         // Draws a flyer person at certain locations, just a rough draft version
        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
-       // Check if there is a collision
-       //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
 
+       // kind of forgot what this map is for
+    //    this.flyerperson_locations.set(key, false);
+    //    this.flyerperson_info.set(key, { startMove: false, progress: 0});
+
+    //    if(this.flyerperson_key)
+
+        // check if the player is within a certain distance
+        if( (this.person_z - model_transform[2][3]) < 5){
+            // if not in map and in range
+            // if (!target.has(key))
+            if(!this.flyerperson_info.has(key)){
+                // add flyerperson2 to map
+                console.log('initialize map');
+                this.flyerperson_info.set(key, {progress: 0, turned: false}); 
+            } else { // if they are initialized -> movement cycle has started 
+                let flyerP = this.flyerperson_info.get(key);
+                //let oldProgress = flyerP.progress;
+                if ( flyerP.turned == false && flyerP.progress < 20){
+                    // translate that guy
+                    model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0));
+                    flyerP.progress += 1; 
+                } else {
+                    if (flyerP.turned == false){
+                        model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
+                        flyerP.turned = true; 
+                    }
+                    model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
+                }
+                // update map with new information
+                this.flyerperson_info.set(key, flyerP); 
+            }
+        }
+
+        // remove this eventually 
        let temp_trans = Mat4.translation(0,0,-7);
 
-       //jake: If you want it rotated, add this line in
-       //temp_trans = temp_trans.times(Mat4.translation(0,0,14)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
-
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
-
+       
        let person = {
            head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
            torso_transform: Mat4.identity().times(Mat4.translation(0,-2.5,0)),
@@ -631,10 +656,22 @@ export class BruinRun extends Base_Scene {
            flyer_transform: Mat4.identity().times(Mat4.translation(0, -6, 1.5))
        }
 
-       model_transform = model_transform.times(Mat4.rotation(Math.PI/2, 0, 5, 0));
        // Use custom transform_matrix to modify entire person at once
        for (let matrix in person) { 
-           person[matrix] = person[matrix].times(model_transform); 
+            // if turned, keep turned, still figuring out how to turn 
+            if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
+                    person = {
+                        head_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, 0, 0)),
+                        torso_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0,-2.5,0)),
+                        arms_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -3, -1.5)),
+                        arms_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -3, 1.5)),
+                        legs_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6.25, -0.5)),
+                        legs_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6.25, 0.5)),
+                        flyer_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6, 1.5))
+                    }
+            } else {
+                person[matrix] = person[matrix].times(model_transform); 
+            }
        }
 
        // Walking Animation Parameters
@@ -665,8 +702,8 @@ export class BruinRun extends Base_Scene {
     //        .times(Mat4.translation(0, -2.25, 0));
 
        person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
-       person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
-       //person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
+       //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
+       person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
        person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.1, 1, 0.75));
@@ -682,100 +719,99 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, temp_trans.times(person.legs_transformL), this.materials.plastic.override(white));
     }
 
-    draw_scene_with_perspective(context, program_state){
-        // Walkway
-        this.draw_walkway(context, program_state); 
+    // draw_scene(context, program_state, scene_translation = Mat4.identity()){
+    //     // @scene_translation: transformation matrix applied to ALL parts (i.e. if you want to move everything)
         
-        // Modify to translate ALL objects in the scene
-        let translate = Mat4.identity();
-
-        // Lightpost 
-        let lp_y = 15;
-        let lightpost_pos = Mat4.translation(-17, lp_y, 0);
-        let lightpost_pos_flip = Mat4.translation(17, lp_y, 0);
-        let lp_scale = Mat4.scale(2, 2, 1);
-        // Bench 
-        let b_y = 3;
-        let bench_pos = Mat4.translation(-15, b_y, 5);
-        let bench_pos_flip = Mat4.translation(15, b_y, 5);
-        let b_scale = Mat4.scale(2, 2, 2);
-        // Trees 
-        let t_y = 16;
-        let tree_pos = Mat4.translation(-27, t_y, 1);
-        let tree_pos_flip = Mat4.translation(27, t_y, 1);
-        let t_scale = Mat4.scale(2, 2, 2);
-
-        // Set how many rows of objects you want to duplicate
-        let rows = 6;
-        for (let i = 0; i < rows; i++) 
-        {
-            let scale_factor = 1 - (.1 * i);
-            let perspective_scale = Mat4.scale(scale_factor, scale_factor, 1);
-            let move_z = -20*i; // how far to iterate in the distance
+    //     // Walkway (& Ground)
+    //     this.draw_walkway(context, program_state, scene_translation);
+    //     // Lightpost 
+    //     let lightpost_pos = Mat4.translation(-17, 15, 0);
+    //     let lightpost_pos_flip = Mat4.translation(17, 15, 0);
+    //     let lp_scale = Mat4.scale(2, 2, 1);
+    //     // Bench 
+    //     let bench_pos = Mat4.translation(-15, 3, 5);
+    //     let bench_pos_flip = Mat4.translation(15, 3, 5);
+    //     let b_scale = Mat4.scale(2, 2, 2);
+    //     // Trees 
+    //     let tree_pos = Mat4.translation(-27, 16, 1);
+    //     let tree_pos_flip = Mat4.translation(27, 16, 1);
+    //     let t_scale = Mat4.scale(2, 2, 2);
+    //     // Set how many rows of objects (lightpost, bench, trees) you want to duplicate
+    //     let rows = 4;
+    //     for (let i = 0; i < rows; i++) 
+    //     {
+    //         let move_z = -20*i; // how far to iterate in the distance
             
-            this.draw_lightpost(context, program_state, lightpost_pos
-                .times(Mat4.translation(0, -1 * (lp_y - (lp_y*scale_factor)), move_z)).times(translate).times(perspective_scale).times(lp_scale));
-            this.draw_lightpost(context, program_state, lightpost_pos_flip
-                .times(Mat4.translation(0, -1 * (lp_y - (lp_y*scale_factor)), move_z)).times(translate).times(perspective_scale).times(lp_scale))                
-            this.draw_bench(context, program_state, bench_pos
-                .times(Mat4.translation(0, -1 * (b_y - (b_y*scale_factor)), move_z)).times(translate).times(perspective_scale).times(b_scale));
-            this.draw_bench(context, program_state, bench_pos_flip
-                .times(Mat4.translation(0, -1 * (b_y - (b_y*scale_factor)), move_z)).times(translate).times(perspective_scale).times(b_scale).times(Mat4.scale(-1,1,1)));
-            // Draw twice as many trees
-            this.draw_tree(context, program_state, tree_pos
-                .times(Mat4.translation(0, -1 * (t_y - (t_y*scale_factor)), move_z)).times(translate).times(perspective_scale).times(t_scale)); 
-            this.draw_tree(context, program_state, tree_pos
-                .times(Mat4.translation(0, -1 * (t_y - (t_y*scale_factor)), move_z + 10*i)).times(translate).times(perspective_scale).times(t_scale)); 
-            this.draw_tree(context, program_state, tree_pos_flip
-                .times(Mat4.translation(0, -1 * (t_y - (t_y*scale_factor)), move_z)).times(translate).times(perspective_scale).times(t_scale)); 
-            this.draw_tree(context, program_state, tree_pos_flip
-                .times(Mat4.translation(0, -1 * (t_y - (t_y*scale_factor)), move_z + 10*i)).times(translate).times(perspective_scale).times(t_scale)); 
-             
+    //         this.draw_lightpost(context, program_state, lightpost_pos
+    //             .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(lp_scale));
+    //         this.draw_lightpost(context, program_state, lightpost_pos_flip
+    //             .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(lp_scale));                
+    //         this.draw_bench(context, program_state, bench_pos
+    //             .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(b_scale));
+    //         this.draw_bench(context, program_state, bench_pos_flip
+    //             .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(b_scale).times(Mat4.scale(-1,1,1)));
+    //         // Draw twice as many trees
+    //         this.draw_tree(context, program_state, tree_pos
+    //             .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(t_scale)); 
+    //         this.draw_tree(context, program_state, tree_pos
+    //             .times(Mat4.translation(0, 0, move_z + 10*i)).times(scene_translation).times(t_scale)); 
+    //         this.draw_tree(context, program_state, tree_pos_flip
+    //             .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(t_scale)); 
+    //         this.draw_tree(context, program_state, tree_pos_flip
+    //             .times(Mat4.translation(0, 0, move_z + 10*i)).times(scene_translation).times(t_scale));    
+    //     for (let i = 1; i < 4; i++) {
+    //         this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
+    //         let move_lightpost = Mat4.translation(0,0,-20*i);
+    //         let flip_lightpost = Mat4.translation(20,0,-5);
+    //         this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
+    //         this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
+    //         this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+    //     }
+    // }
+
+    draw_scene(context, program_state, scene_translation = Mat4.identity()) {
+        let t = program_state.animation_time / 1000;
+
+        let tree1_pos = Mat4.translation(10,13,1,1);
+        let tree2_pos = Mat4.translation(-21, 13, 1,1);
+
+        let trees = [tree1_pos, tree2_pos];
+
+
+        // Draw more trees
+        trees.forEach(tree => {
+            let tree_scale = Mat4.scale(1.2,1.2,1.2);
+            this.draw_tree(context, program_state, tree.times(scene_translation).times(Mat4.translation(0,-2.5,0)).times(tree_scale));
+            let further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -60)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+        });
+
+
+        let bench_pos = Mat4.translation(-15,3,5);
+        for (let i = 0; i < 4; i++) {
+            this.draw_bench(context, program_state, bench_pos);
+            let move_bench = Mat4.translation(0,0,-20*i);
+            let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
+
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
         }
-    }
 
-    draw_scene(context, program_state, scene_translation = Mat4.identity()){
-        // @scene_translation: transformation matrix applied to ALL parts (i.e. if you want to move everything)
-        
-        // Walkway (& Ground)
-        this.draw_walkway(context, program_state, scene_translation);
+        for (let i = 1; i < 4; i++) {
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
+            let move_lightpost = Mat4.translation(0,0,-20*i);
+            let flip_lightpost = Mat4.translation(20,0,-5);
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
 
-        // Lightpost 
-        let lightpost_pos = Mat4.translation(-17, 15, 0);
-        let lightpost_pos_flip = Mat4.translation(17, 15, 0);
-        let lp_scale = Mat4.scale(2, 2, 1);
-        // Bench 
-        let bench_pos = Mat4.translation(-15, 3, 5);
-        let bench_pos_flip = Mat4.translation(15, 3, 5);
-        let b_scale = Mat4.scale(2, 2, 2);
-        // Trees 
-        let tree_pos = Mat4.translation(-27, 16, 1);
-        let tree_pos_flip = Mat4.translation(27, 16, 1);
-        let t_scale = Mat4.scale(2, 2, 2);
-
-        // Set how many rows of objects (lightpost, bench, trees) you want to duplicate
-        let rows = 4;
-        for (let i = 0; i < rows; i++) 
-        {
-            let move_z = -20*i; // how far to iterate in the distance
-            
-            this.draw_lightpost(context, program_state, lightpost_pos
-                .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(lp_scale));
-            this.draw_lightpost(context, program_state, lightpost_pos_flip
-                .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(lp_scale));                
-            this.draw_bench(context, program_state, bench_pos
-                .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(b_scale));
-            this.draw_bench(context, program_state, bench_pos_flip
-                .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(b_scale).times(Mat4.scale(-1,1,1)));
-            // Draw twice as many trees
-            this.draw_tree(context, program_state, tree_pos
-                .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(t_scale)); 
-            this.draw_tree(context, program_state, tree_pos
-                .times(Mat4.translation(0, 0, move_z + 10*i)).times(scene_translation).times(t_scale)); 
-            this.draw_tree(context, program_state, tree_pos_flip
-                .times(Mat4.translation(0, 0, move_z)).times(scene_translation).times(t_scale)); 
-            this.draw_tree(context, program_state, tree_pos_flip
-                .times(Mat4.translation(0, 0, move_z + 10*i)).times(scene_translation).times(t_scale));    
         }
     }
 
@@ -784,11 +820,13 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, model_transform, this.materials.start_screen);
     }
 
+
+
     display(context, program_state) {
         super.display(context, program_state);
-        // display():  Called once per frame of animation. Here, the base class's display only does
-        // some initial setup.
 
+                // display():  Called once per frame of animation. Here, the base class's display only does
+        // some initial setup.
         if(!this.start_game){
             const initial_camera_position = Mat4.translation(0, 0, -30);
 
@@ -797,15 +835,15 @@ export class BruinRun extends Base_Scene {
                 // Define the global camera and projection matrices, which are stored in program_state.
                 program_state.set_camera(initial_camera_position);
             }
-    
+
             program_state.projection_transform = Mat4.perspective(
                 Math.PI / 4, context.width / context.height, 1, 100);
-    
+
             // *** Lights: *** Values of vector or point lights.
             const light_position = vec4(5, 30, 20, 1);
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
             let t = program_state.animation_time / 1000;
-    
+
             // Player
             this.draw_start_screen(context, program_state, Mat4.identity())
         }
@@ -827,21 +865,20 @@ export class BruinRun extends Base_Scene {
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
         let t = program_state.animation_time / 1000;
 
-        // Player
+        let walkway_transform = Mat4.translation(0,0,-10);
+
+
+        this.draw_walkway(context, program_state, walkway_transform);
         this.draw_person(context, program_state, this.person_transform);
 
-        // Scene
-        let scene_length = 40; // aka walkway's length
-        let sec_per_scene = 3; // how fast it scrolls
-        let move_z = ((scene_length / sec_per_scene) * t) % scene_length;
-        this.draw_scene(context, program_state, Mat4.translation(0, 0, move_z));
-        this.draw_scene(context, program_state, Mat4.translation(0, 0, move_z - scene_length))
-        
-        //TODO: Figure out how to make it not slide, has something to do w/ the z param in translation
-        // if ( (Math.floor(this.person_z) % 100) == -50) {
-        //     console.log( Math.floor(this.person_z) );
-        //     this.lightpost_pos = this.lightpost_pos.times(Mat4.translation(0,0,-20));
-        // }
+        let temp = Mat4.translation(0,0,0);
+
+        this.draw_scene(context, program_state, temp);
+        if ( this.person_z < -10) {
+            temp = Mat4.translation(0,0,-80);
+            this.draw_scene(context, program_state, temp);
+        }
+
        
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
        //stationary starship for collision testing
@@ -851,9 +888,11 @@ export class BruinRun extends Base_Scene {
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        
+       
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
-        this.draw_flyerperson2(context, program_state, this.flyerperson_transform);
+        // be warned, for collision, flyerperson2 requires the input of a key, don'tdo any duplicates 
+        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -5)), 2);
         flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
@@ -861,10 +900,11 @@ export class BruinRun extends Base_Scene {
         flyerperson_motion = Mat4.translation(52.5, 0 ,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
 
+
        if(!this.detach_camera){
             //Use the default camera position
             program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));       
        }
     }
-    }
+}
 }
