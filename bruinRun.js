@@ -182,9 +182,8 @@ export class BruinRun extends Base_Scene {
         // Why are some things here and some things in the Base_Scene constructor?
         this.bot_transform = Mat4.translation(-3,4,0);
         this.flyerperson_transform = Mat4.translation(8,10,7);
-        this.right_tree1 = Mat4.translation(10,12,1,1).times(Mat4.scale(.8,.8,.8));
 
-        this.lightpost_pos = Mat4.translation(-17,7,0).times(Mat4.scale(.8,.8,.8));
+        this.lightpost_pos = Mat4.translation(-18,9,0).times(Mat4.scale(1.5,1.5,1.5));
         this.rand_position = Math.floor(Math.random()*6) + 1;
 
     }
@@ -700,8 +699,8 @@ export class BruinRun extends Base_Scene {
         let t = program_state.animation_time / 1000;
 
         let walkway_transform = Mat4.translation(0,0,-10);
-        let tree1_pos = Mat4.translation(10,11.5,1,1);
-        let tree2_pos = Mat4.translation(-21, 11.5, 1,1);
+        let tree1_pos = Mat4.translation(10,13,1,1);
+        let tree2_pos = Mat4.translation(-21, 13, 1,1);
 
         let trees = [tree1_pos, tree2_pos];
 
@@ -713,12 +712,13 @@ export class BruinRun extends Base_Scene {
 
         // Draw more trees
         trees.forEach(tree => {
-            this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)));
-            let further_tree = tree.times(Mat4.translation(0, -2.5, -20));
+            let tree_scale = Mat4.scale(1.2,1.2,1.2);
+            this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)).times(tree_scale));
+            let further_tree = tree.times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
             this.draw_tree(context, program_state, further_tree);
-            further_tree = tree.times(Mat4.translation(0, -2.5, -30));
+            further_tree = tree.times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
             this.draw_tree(context, program_state, further_tree);
-            further_tree = tree.times(Mat4.translation(2, -2.5, -45));
+            further_tree = tree.times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
             this.draw_tree(context, program_state, further_tree);
         });
 
@@ -732,7 +732,7 @@ export class BruinRun extends Base_Scene {
         for (let i = 1; i < 6; i++) {
             this.draw_lightpost(context, program_state, this.lightpost_pos);
             let move_lightpost = Mat4.translation(0,0,-20*i);
-            let flip_lightpost = Mat4.translation(31,0,-5);
+            let flip_lightpost = Mat4.translation(20,0,-5);
             this.draw_lightpost(context, program_state, this.lightpost_pos.times(move_lightpost));
             this.draw_lightpost(context, program_state, this.lightpost_pos.times(flip_lightpost));
             this.draw_lightpost(context, program_state, this.lightpost_pos.times(flip_lightpost).times(move_lightpost));
