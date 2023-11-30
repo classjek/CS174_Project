@@ -699,6 +699,28 @@ export class BruinRun extends Base_Scene {
             further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -60)).times(tree_scale);
             this.draw_tree(context, program_state, further_tree);
         });
+
+
+        let bench_pos = Mat4.translation(-15,3,5);
+        for (let i = 0; i < 4; i++) {
+            this.draw_bench(context, program_state, bench_pos);
+            let move_bench = Mat4.translation(0,0,-20*i);
+            let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
+
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+        }
+
+        for (let i = 1; i < 4; i++) {
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
+            let move_lightpost = Mat4.translation(0,0,-20*i);
+            let flip_lightpost = Mat4.translation(20,0,-5);
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+
+        }
     }
 
     display(context, program_state) {
@@ -725,10 +747,7 @@ export class BruinRun extends Base_Scene {
         let t = program_state.animation_time / 1000;
 
         let walkway_transform = Mat4.translation(0,0,-10);
-        // let tree1_pos = Mat4.translation(10,13,1,1);
-        // let tree2_pos = Mat4.translation(-21, 13, 1,1);
 
-        // let trees = [tree1_pos, tree2_pos];
 
         this.draw_walkway(context, program_state, walkway_transform);
         this.draw_person(context, program_state, this.person_transform);
@@ -739,45 +758,6 @@ export class BruinRun extends Base_Scene {
         if ( this.person_z < -10) {
             temp = Mat4.translation(0,0,-80);
             this.draw_scene(context, program_state, temp);
-        }
-
-
-
-
-
-        // // Draw more trees
-        // trees.forEach(tree => {
-        //     let tree_scale = Mat4.scale(1.2,1.2,1.2);
-        //     this.draw_tree(context, program_state, tree.times(Mat4.translation(0,-2.5,0)).times(tree_scale));
-        //     let further_tree = tree.times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
-        //     this.draw_tree(context, program_state, further_tree);
-        //     further_tree = tree.times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
-        //     this.draw_tree(context, program_state, further_tree);
-        //     further_tree = tree.times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
-        //     this.draw_tree(context, program_state, further_tree);
-        // });
-
-
-
-        for (let i = 1; i < 6; i++) {
-            this.draw_lightpost(context, program_state, this.lightpost_pos);
-            let move_lightpost = Mat4.translation(0,0,-20*i);
-            let flip_lightpost = Mat4.translation(20,0,-5);
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(move_lightpost));
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(flip_lightpost));
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(flip_lightpost).times(move_lightpost));
-
-        }
-
-        let bench_pos = Mat4.translation(-15,3,5);
-        for (let i = 0; i < 4; i++) {
-            this.draw_bench(context, program_state, bench_pos);
-            let move_bench = Mat4.translation(0,0,-20*i);
-            let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
-
-            this.draw_bench(context, program_state, bench_pos.times(move_bench));
-            this.draw_bench(context, program_state, bench_pos.times(flip_bench));
-            this.draw_bench(context, program_state, bench_pos.times(flip_bench).times(move_bench));
         }
 
        
