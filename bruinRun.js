@@ -97,7 +97,8 @@ class Base_Scene extends Scene {
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
 
-        //keeps track of flyer person's locations
+        //keeps track of flyer persons
+        // This map currently has two elements, one to keep track of the flyerperson's x movement and the other to keep track of their rotation
         this.flyerperson_info = new Map();
 
         // Event listeners for x and z movement
@@ -361,10 +362,6 @@ export class BruinRun extends Base_Scene {
         // Draws a person at the origin, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
-        // Check if there is a collision
-        //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
-
-
         // Jumping 
         if (this.isJumping){
             //if the player is not over as starship
@@ -468,6 +465,8 @@ export class BruinRun extends Base_Scene {
             .times(Mat4.translation(0, 2, 0))
             .times(Mat4.rotation(t_reverse, 1, 0, 0))
             .times(Mat4.translation(0, -2, 0));
+            //eventually add this back in
+            // it is just hard to test collision when that dude is always moving
         // person.legs_transformL = person.legs_transformL
         //     .times(Mat4.translation(0, 2.25, 0))
         //     .times(Mat4.rotation(t_reverse, 1, 0, 0))
@@ -488,7 +487,8 @@ export class BruinRun extends Base_Scene {
         let collision = false; 
         this.on_starship = false; 
 
-        // check within a 4 unit radius if there is a collision
+        // Check Staship Collisions //
+        //    check within a 4 unit radius if there is a collision
         for(let i = 0; i < 8; i++){
             const key = rounded_person_z -4 + i; 
             // check if key-value pair exists in starship_locations, assign to starship_x
@@ -498,20 +498,14 @@ export class BruinRun extends Base_Scene {
 
                 // check if collision within 3 unit radius 
                 for(let i = 0; i < 6; i++){
-                    if(rounded_person_x - 3 + i === starship_x){
-                        // collision detected assuming not jumping 
+                    if(rounded_person_x - 3 + i === starship_x){ 
                         collision = true; 
                         if (this.isJumping){
-                            //console.log('collision but jumping');
-                            // What height does this correlate to? 
-                            //if (this.jumpHeight > 10){
                             if ( this.person_y > 13) {
-                                console.log('jumping over that jawn', this.person_y);
                                 collision = false; 
                                 this.on_starship = true; 
                             }
                         }
-                        //collision = true; 
                     }
                 }
             }
@@ -701,8 +695,8 @@ export class BruinRun extends Base_Scene {
     //        .times(Mat4.translation(0, -2.25, 0));
 
        person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
-       person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
-       //person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
+       //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
+       person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
        person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.1, 1, 0.75));
