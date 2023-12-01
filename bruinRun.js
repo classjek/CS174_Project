@@ -844,7 +844,7 @@ export class BruinRun extends Base_Scene {
 
 
         //right now Ackerman is 40 units long I think
-        let ack_pos = Mat4.translation(19,12,-2).times(Mat4.rotation(Math.PI/40,0,-1,0)).times(Mat4.scale(5,12,10));
+        let ack_pos = Mat4.translation(19,12,-2).times(Mat4.rotation(Math.PI/40,0,-1,0)).times(scene_translation).times(Mat4.scale(5,12,10));
         this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
         ack_pos =  ack_pos.times(Mat4.translation(0,0,-2));
         this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
@@ -853,6 +853,86 @@ export class BruinRun extends Base_Scene {
         ack_pos =  ack_pos.times(Mat4.translation(0,0,-2));
         this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
 
+
+        //Background: More trees behind all the trees
+        let floor_pos = Mat4.translation(-38,-.5,-30).times(Mat4.scale(15,1,50));
+        this.shapes.cube.draw(context, program_state, floor_pos, this.materials.plastic.override( {color: hex_color("#493527")}));
+
+        let forest_trans = Mat4.translation(-8,-2,-11);
+
+        let tree_scale = Mat4.scale(1.5,2,1.5);
+
+        for (var i = 0; i < 10; i++) {
+            let move_forest = Mat4.translation(0,0,-6*i);
+            this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+        }
+        forest_trans = Mat4.translation(-15,-2,-8);
+        for (var i = 0; i < 10; i++) {
+            let move_forest = Mat4.translation(0,0,-6*i);
+            this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+        }
+
+
+
+    }
+
+    draw_scene_kerck(context, program_state, scene_translation = Mat4.identity()) {
+        let t = program_state.animation_time / 1000;
+
+        let tree1_pos = Mat4.translation(10,13,1,1);
+        let tree2_pos = Mat4.translation(-21, 13, 1,1);
+
+        let trees = [tree1_pos, tree2_pos];
+
+
+        // Draw more trees
+        trees.forEach(tree => {
+            let tree_scale = Mat4.scale(1.2,1.2,1.2);
+            this.draw_tree(context, program_state, tree.times(scene_translation).times(Mat4.translation(0,-2.5,0)).times(tree_scale));
+            let further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -60)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+        });
+
+
+        let bench_pos = Mat4.translation(-15,3,5);
+        for (let i = 0; i < 4; i++) {
+            this.draw_bench(context, program_state, bench_pos);
+            let move_bench = Mat4.translation(0,0,-20*i);
+            let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
+
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
+            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+        }
+
+        for (let i = 1; i < 4; i++) {
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
+            let move_lightpost = Mat4.translation(0,0,-20*i);
+            let flip_lightpost = Mat4.translation(20,0,-5);
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
+            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+
+        }
+
+        let lawn_trans = Mat4.translation(22,3.5,-15).times(Mat4.rotation(Math.PI/2.5,0,0,-1)).times(Mat4.scale(.1,10,30));
+        this.shapes.cube.draw(context, program_state, lawn_trans, this.materials.plastic.override( {color: hex_color("#00ff00")}))
+        let step_trans = Mat4.translation(14.5,2.2,-22).times(Mat4.scale(1,.5,10));
+        for (var i = 0; i < 3; i++) {
+            this.shapes.cube.draw(context, program_state, step_trans, this.materials.plastic.override( {color: hex_color("#b3ac98")}))
+            step_trans = step_trans.times(Mat4.translation(2,2,0));
+            this.shapes.cube.draw(context, program_state, step_trans, this.materials.plastic.override( {color: hex_color("#b3ac98")}))
+        }
+
+        let building_trans = Mat4.translation(28,20,-22).times(Mat4.scale(6,15,10));
+        this.shapes.cube.draw(context, program_state, building_trans, this.materials.plastic.override ( {color: hex_color("#b3ac98")}));
+        
 
         //Background: More trees behind all the trees
         let floor_pos = Mat4.translation(-38,-.5,-30).times(Mat4.scale(15,1,50));
@@ -979,12 +1059,12 @@ export class BruinRun extends Base_Scene {
         this.draw_walkway(context, program_state, walkway_transform);
         this.draw_person(context, program_state, this.person_transform);
 
-        let temp = Mat4.translation(0,0,0);
+        let move_scene = Mat4.translation(0,0,0);
 
-        this.draw_scene_ack(context, program_state, temp);
+        this.draw_scene_kerck(context, program_state, move_scene);
         if ( this.person_z < -10) {
-            temp = Mat4.translation(0,0,-80);
-            this.draw_scene(context, program_state, temp);
+            move_scene = Mat4.translation(0,0,-80);
+            this.draw_scene(context, program_state, move_scene);
         }
 
        
