@@ -172,6 +172,9 @@ class Base_Scene extends Scene {
             ack_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/ackerman.jpg", "NEAREST")}),
+            gene: new Material(new defs.Textured_Phong(), 
+                {   ambient: 1, diffusivity: 0.1, specularity: 0.1,
+                    texture: new Texture("assets/text.png", "NEAREST")}),
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -449,13 +452,10 @@ export class BruinRun extends Base_Scene {
         if(this.running){
             // add more to this function once collision detection is done
             this.runDist +=1; 
-            // limit dictates run distance 
-            if(this.runDist < 500){
-                // Last parameter dictates speed
-                this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
+            // translate sky and person
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
                 this.person_z = this.person_transform[2][3];
                 this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
-            }
         }
 
         // Walking Animation Parameters
@@ -467,24 +467,24 @@ export class BruinRun extends Base_Scene {
 
         // change this so it is conditional based on if the character is moving or not
         // Walking Animation
-        person.arms_transformL = person.arms_transformL
-            .times(Mat4.translation(0, 2, 0))
-            .times(Mat4.rotation(t, 1, 0, 0))
-            .times(Mat4.translation(0, -2, 0));
-        person.arms_transformR = person.arms_transformR
-            .times(Mat4.translation(0, 2, 0))
-            .times(Mat4.rotation(t_reverse, 1, 0, 0))
-            .times(Mat4.translation(0, -2, 0));
-            //eventually add this back in
-            // it is just hard to test collision when that dude is always moving
-        // person.legs_transformL = person.legs_transformL
-        //     .times(Mat4.translation(0, 2.25, 0))
-        //     .times(Mat4.rotation(t_reverse, 1, 0, 0))
-        //     .times(Mat4.translation(0, -2.25, 0));         
-        // person.legs_transformR = person.legs_transformR
-        //     .times(Mat4.translation(0, 2.25, 0))
-        //     .times(Mat4.rotation(t, 1, 0, 0))
-        //     .times(Mat4.translation(0, -2.25, 0));
+        if (this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.running) {
+            person.arms_transformL = person.arms_transformL
+                .times(Mat4.translation(0, 2, 0))
+                .times(Mat4.rotation(t, 1, 0, 0))
+                .times(Mat4.translation(0, -2, 0));
+            person.arms_transformR = person.arms_transformR
+                .times(Mat4.translation(0, 2, 0))
+                .times(Mat4.rotation(t_reverse, 1, 0, 0))
+                .times(Mat4.translation(0, -2, 0));
+            person.legs_transformL = person.legs_transformL
+                .times(Mat4.translation(0, 2.25, 0))
+                .times(Mat4.rotation(t_reverse, 1, 0, 0))
+                .times(Mat4.translation(0, -2.25, 0));         
+            person.legs_transformR = person.legs_transformR
+                .times(Mat4.translation(0, 2.25, 0))
+                .times(Mat4.rotation(t, 1, 0, 0))
+                .times(Mat4.translation(0, -2.25, 0));
+        }
 
         person.head_transform = person.head_transform.times(Mat4.scale(1,1,.75));
         person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
@@ -521,6 +521,13 @@ export class BruinRun extends Base_Scene {
             }
         } 
 
+        // Check Flyer Collisions //
+        // for( let i = 0; i < 4; i ++){
+        //     let key = rounded_person_z + i;
+
+        // }
+
+
         if(!collision){
             this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(yellow));
             this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(blue));
@@ -529,7 +536,7 @@ export class BruinRun extends Base_Scene {
             this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(yellow));
             this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(yellow));
         } else {
-            this.shapes.cube.draw(context, program_state, person.head_transform,  this.materials.plastic.override(red));
+            this.shapes.cube.draw(context, program_state, person.head_transform,  this.materials.start_screen);
             this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(red));
             this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(red));
             this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(red));
@@ -606,17 +613,12 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
     }
 
-    draw_flyerperson2(context, program_state, model_transform, key){
+    draw_flyerperson2(context, program_state, model_transform){
         // Draws a flyer person at certain locations, just a rough draft version
        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
-
-       // kind of forgot what this map is for
-    //    this.flyerperson_locations.set(key, false);
-    //    this.flyerperson_info.set(key, { startMove: false, progress: 0});
-
     //    if(this.flyerperson_key)
-
+            let key = model_transform[1][3];
         // check if the player is within a certain distance
         if( (this.person_z - model_transform[2][3]) < 5){
             // if not in map and in range
@@ -713,7 +715,15 @@ export class BruinRun extends Base_Scene {
        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
-       this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+       //this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+       // if turned, make it gene block face
+       if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
+            this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.gene);
+       } else {
+            this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+       }
+
+       //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, temp_trans.times(person.torso_transform), this.materials.plastic.override(black));
         this.shapes.cube.draw(context, program_state, temp_trans.times(person.arms_transformR), this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, temp_trans.times(person.flyer_transform), this.materials.plastic.override(green));
@@ -972,11 +982,10 @@ export class BruinRun extends Base_Scene {
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        
-       
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
         // be warned, for collision, flyerperson2 requires the input of a key, don'tdo any duplicates 
-        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -5)), 2);
+        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -5)));
         flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
