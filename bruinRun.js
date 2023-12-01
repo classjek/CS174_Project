@@ -464,7 +464,7 @@ export class BruinRun extends Base_Scene {
 
         // change this so it is conditional based on if the character is moving or not
         // Walking Animation
-        if (this.moveForward || this.moveBackward || this.moveLeft || this.moveRight) {
+        if (this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.running) {
             person.arms_transformL = person.arms_transformL
                 .times(Mat4.translation(0, 2, 0))
                 .times(Mat4.rotation(t, 1, 0, 0))
