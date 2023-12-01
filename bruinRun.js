@@ -522,10 +522,24 @@ export class BruinRun extends Base_Scene {
         } 
 
         // Check Flyer Collisions //
-        // for( let i = 0; i < 4; i ++){
-        //     let key = rounded_person_z + i;
-
-        // }
+        // check if flyer person is in front of person with certain range
+        for( let i = 0; i < 5; i ++){
+            let key = rounded_person_z - i;
+            //let key = rounded_person_z; 
+            //console.log('mykey', key);
+            if(this.flyerperson_info.has(key)){ 
+                // console.log('collision at z = ', key);
+                // collision = true; 
+                let flyer_x = this.flyerperson_info.get(key).x_pos;
+                let rounded_person_x = Math.round(model_transform[0][3]);
+                console.log('flyer ', flyer_x, ' person ', rounded_person_x);
+                for( let i = 0; i < 6; i++){
+                    if( Math.round(flyer_x - 3 + i) == rounded_person_x){
+                        collision = true; 
+                    }
+                }
+            }
+        }
 
 
         if(!collision){
@@ -617,16 +631,17 @@ export class BruinRun extends Base_Scene {
         // Draws a flyer person at certain locations, just a rough draft version
        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
-    //    if(this.flyerperson_key)
-            let key = model_transform[1][3];
+        // set the key to z axis as it is somewhat unique and won't change throughout
+            let key = model_transform[2][3];
+            console.log('key at', key);
         // check if the player is within a certain distance
-        if( (this.person_z - model_transform[2][3]) < 5){
+        if( (this.person_z - model_transform[2][3]) < 10){
             // if not in map and in range
             // if (!target.has(key))
             if(!this.flyerperson_info.has(key)){
                 // add flyerperson2 to map
                 console.log('initialize map');
-                this.flyerperson_info.set(key, {progress: 0, turned: false}); 
+                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3]}); 
             } else { // if they are initialized -> movement cycle has started 
                 let flyerP = this.flyerperson_info.get(key);
                 //let oldProgress = flyerP.progress;
@@ -634,6 +649,8 @@ export class BruinRun extends Base_Scene {
                     // translate that guy
                     model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0));
                     flyerP.progress += 1; 
+                    // update stored x component
+                    flyerP.x_pos = model_transform[0][3];
                 } else {
                     if (flyerP.turned == false){
                         model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0)); 
@@ -645,9 +662,6 @@ export class BruinRun extends Base_Scene {
                 this.flyerperson_info.set(key, flyerP); 
             }
         }
-
-        // remove this eventually 
-       let temp_trans = Mat4.translation(0,0,-7);
 
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
        
@@ -716,20 +730,20 @@ export class BruinRun extends Base_Scene {
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
        //this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
-       // if turned, make it gene block face
+       // if turned, add texture to face, eventually change this texture to something funny
        if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
-            this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.gene);
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
        } else {
-            this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
        }
 
        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, temp_trans.times(person.torso_transform), this.materials.plastic.override(black));
-        this.shapes.cube.draw(context, program_state, temp_trans.times(person.arms_transformR), this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, temp_trans.times(person.flyer_transform), this.materials.plastic.override(green));
-        this.shapes.cube.draw(context, program_state, temp_trans.times(person.arms_transformL), this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, temp_trans.times(person.legs_transformR), this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, temp_trans.times(person.legs_transformL), this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
+        this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.flyer_transform, this.materials.plastic.override(green));
+        this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
     }
 
     // draw_scene(context, program_state, scene_translation = Mat4.identity()){
@@ -976,7 +990,7 @@ export class BruinRun extends Base_Scene {
        
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
        //stationary starship for collision testing
-       this.draw_starship(context, program_state, this.bot_transform);
+       //this.draw_starship(context, program_state, this.bot_transform);
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
@@ -985,7 +999,7 @@ export class BruinRun extends Base_Scene {
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
         // be warned, for collision, flyerperson2 requires the input of a key, don'tdo any duplicates 
-        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -5)));
+        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -12)));
         flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
