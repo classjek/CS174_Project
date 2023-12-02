@@ -172,6 +172,9 @@ class Base_Scene extends Scene {
             ack_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/ackerman.jpg", "NEAREST")}),
+            kerck_texture: new Material(new defs.Textured_Phong(),
+                {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
+                texture: new Texture("assets/kerck.jpg", "NEAREST")}),
             gene: new Material(new defs.Textured_Phong(), 
                 {   ambient: 1, diffusivity: 0.1, specularity: 0.1,
                     texture: new Texture("assets/text.png", "NEAREST")}),
@@ -921,17 +924,20 @@ export class BruinRun extends Base_Scene {
 
         }
 
-        let lawn_trans = Mat4.translation(22,3.5,-15).times(Mat4.rotation(Math.PI/2.5,0,0,-1)).times(Mat4.scale(.1,10,30));
-        this.shapes.cube.draw(context, program_state, lawn_trans, this.materials.plastic.override( {color: hex_color("#00ff00")}))
-        let step_trans = Mat4.translation(14.5,2.2,-22).times(Mat4.scale(1,.5,10));
-        for (var i = 0; i < 3; i++) {
-            this.shapes.cube.draw(context, program_state, step_trans, this.materials.plastic.override( {color: hex_color("#b3ac98")}))
+        let lawn_trans = Mat4.translation(23,2,-27).times(Mat4.rotation(Math.PI/2.5,0,0,-1)).times(Mat4.scale(.1,10,50));
+        this.shapes.cube.draw(context, program_state, scene_translation.times(lawn_trans), this.materials.plastic.override( {color: hex_color("#00ff00")}))
+        let step_trans = Mat4.translation(20,2.2,-45).times(Mat4.scale(1,.5,10));
+        for (var i = 0; i < 5; i++) {
+            this.shapes.cube.draw(context, program_state, scene_translation.times(step_trans), this.materials.plastic.override( {color: hex_color("#474a52")}))
             step_trans = step_trans.times(Mat4.translation(2,2,0));
-            this.shapes.cube.draw(context, program_state, step_trans, this.materials.plastic.override( {color: hex_color("#b3ac98")}))
+            this.shapes.cube.draw(context, program_state, step_trans, this.materials.plastic.override( {color: hex_color("#474a52")}))
         }
 
-        let building_trans = Mat4.translation(28,20,-22).times(Mat4.scale(6,15,10));
-        this.shapes.cube.draw(context, program_state, building_trans, this.materials.plastic.override ( {color: hex_color("#b3ac98")}));
+        let building_trans = Mat4.translation(37,20,-45).times(Mat4.scale(8,15,10));
+        this.shapes.cube.draw(context, program_state, scene_translation.times(building_trans), this.materials.kerck_texture);
+        let double_building = Mat4.translation(1,0,0)
+        this.shapes.cube.draw(context, program_state, scene_translation.times(building_trans).times(double_building), this.materials.kerck_texture);
+
         
 
         //Background: More trees behind all the trees
@@ -1061,11 +1067,12 @@ export class BruinRun extends Base_Scene {
 
         let move_scene = Mat4.translation(0,0,0);
 
-        this.draw_scene_kerck(context, program_state, move_scene);
+        this.draw_scene_ack(context, program_state, move_scene);
         if ( this.person_z < -10) {
             move_scene = Mat4.translation(0,0,-80);
-            this.draw_scene(context, program_state, move_scene);
+            this.draw_scene_kerck(context, program_state, move_scene);
         }
+
 
        
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
