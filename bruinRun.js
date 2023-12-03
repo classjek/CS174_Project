@@ -446,9 +446,10 @@ export class BruinRun extends Base_Scene {
                 this.person_y = model_transform[1][3];
             }
             else { // player is currently jumping over a starship 
-
-                if ((Math.round(this.person_y * 2) == 28) && (this.jumpHeight > 25)){
-                    console.log('he is on the thingy', this.person_y);
+                // Fix this confusing if statement
+                if ((Math.round(this.person_y * 2) == 27) && (this.jumpHeight > 25)){
+                    // Remove this
+                    console.log('player on starship', this.person_y);
                 } else {
                     this.jumpHeight +=1; 
                     if (this.jumpHeight > 50){
@@ -480,26 +481,44 @@ export class BruinRun extends Base_Scene {
             person[matrix] = person[matrix].times(model_transform); 
         }
 
+        // change this later to just wrap around the movement stuff
+        // if(this.collision){
+        //     this.moveRight = false; 
+        //     this.moveLeft = false; 
+        //     this.running = false; 
+        //     this.moveForward = false;
+        //     this.moveBackward = false; 
+        // }
+
         // Left/Right Movement
         // Once course is done, add bounds so character can't move off the course/offscreen
         // decide if we want the camera to follow the character or not
+        // change these for collision testing
         if(this.moveRight){
-            this.person_transform = this.person_transform.times(Mat4.translation(0.5, 0, 0));
+            //this.person_transform = this.person_transform.times(Mat4.translation(0.5, 0, 0));
+            this.person_transform = this.person_transform.times(Mat4.translation(0.2, 0, 0));
         }
         if(this.moveLeft){
-            this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
+            //this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
+            this.person_transform = this.person_transform.times(Mat4.translation(-0.2, 0, 0));
         }
         if(this.moveForward){
             // because inverted z axis 
-            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
+            // this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -1));
+            // this.person_z = this.person_transform[2][3]; 
+            // this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-1));
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
             this.person_z = this.person_transform[2][3]; 
-            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-1));
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-0.2));
 
         }
         if(this.moveBackward){
-            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
+            // this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 1));
+            // this.person_z = this.person_transform[2][3]; 
+            // this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,1));
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 0.2));
             this.person_z = this.person_transform[2][3]; 
-            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,1));
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,0.2));
 
         }
         if(this.running){
@@ -551,9 +570,9 @@ export class BruinRun extends Base_Scene {
         this.on_starship = false; 
 
         // Check Staship Collisions //
-        //    check within a 4 unit radius if there is a collision
-        for(let i = 0; i < 8; i++){
-            const key = rounded_person_z -4 + i; 
+        //    check within a 4 unit radius if there is a collision in z 
+        for(let i = 0; i < 4; i++){
+            const key = rounded_person_z -2 + i; 
             // check if key-value pair exists in starship_locations, assign to starship_x
             if(this.starship_locations.get(key)){
                 let starship_x = Math.round(this.starship_locations.get(key));
@@ -1130,7 +1149,7 @@ export class BruinRun extends Base_Scene {
        
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
        //stationary starship for collision testing
-       //this.draw_starship(context, program_state, this.bot_transform);
+       this.draw_starship(context, program_state, this.bot_transform);
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
@@ -1139,7 +1158,7 @@ export class BruinRun extends Base_Scene {
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
         // be warned, for collision, flyerperson2 requires the input of a key, don'tdo any duplicates 
-        this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -12)));
+        //this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -12)));
         flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
         this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
         flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
@@ -1155,9 +1174,9 @@ export class BruinRun extends Base_Scene {
 
        // if there is collision, present flyer to camera 
        // maybe place this inside the previous if statement
-       if(this.collision){
-            this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
-       }
+    //    if(this.collision){
+    //         this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
+    //    }
     }
 }
 }
