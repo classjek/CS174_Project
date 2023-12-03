@@ -30,6 +30,38 @@ class Walk extends Shape {
     }
 }
 
+class Flyer extends Shape {
+    constructor() {
+        super("position", "normal",);
+            // Define vertices for a nearly flat cube (thick square)
+            this.arrays.position = Vector3.cast(
+                // Front face
+                [-1, -1, 0.05], [1, -1, 0.05], [-1, 1, 0.05], [1, 1, 0.05],
+                // Back face
+                [-1, -1, -0.05], [1, -1, -0.05], [-1, 1, -0.05], [1, 1, -0.05]
+            );
+            this.arrays.normal = Vector3.cast(
+                // Normals for each face
+                [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], // Front face
+                [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1]  // Back face
+            );
+            this.arrays.texture_coord = Vector3.cast(
+                // Front and Back faces
+                [0, 0], [1, 0], [0, 1], [1, 1], // Repeated for both front and back faces
+                [0, 0], [1, 0], [0, 1], [1, 1]
+            );
+            // Define indices for the nearly flat cube
+            this.indices.push(
+                0, 1, 2, 1, 3, 2, // Front face
+                4, 6, 5, 5, 6, 7, // Back face
+                0, 2, 4, 2, 6, 4, // Left face
+                1, 5, 3, 3, 5, 7, // Right face
+                2, 3, 6, 3, 7, 6, // Top face
+                0, 4, 1, 1, 4, 5  // Bottom face
+            );
+    }
+}
+
 class Trapezoid extends Shape {
     constructor() {
         super("position", "normal",);
@@ -101,6 +133,10 @@ class Base_Scene extends Scene {
         // This map currently has two elements, one to keep track of the flyerperson's x movement and the other to keep track of their rotation
         this.flyerperson_info = new Map();
 
+        // keep track of if a collision has been triggered
+        this.collision = false; 
+        this.flyer_size = 0; 
+
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -147,11 +183,12 @@ class Base_Scene extends Scene {
             'sphere': new defs.Subdivision_Sphere(4),
             'cone': new defs.Rounded_Closed_Cone(20,20),
             'bot': new defs.Rounded_Capped_Cylinder(35,35),
-
+            'flyer': new Flyer(),
         };
 
         // Bounding Box for Person ->  use later for collisions
         // need to write updateBoundingBox function and call it inside draw_person
+        // DELETE THIS
         this.personBoundingBox = {
             min: { x: 0, y: 0, z: 0 },
             max: { x: 0, y: 0, z: 0 }
@@ -176,8 +213,11 @@ class Base_Scene extends Scene {
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/kerck.jpg", "NEAREST")}),
             gene: new Material(new defs.Textured_Phong(), 
-                {   ambient: 1, diffusivity: 0.1, specularity: 0.1,
+                {   ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/text.png", "NEAREST")}),
+            flyer1: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
+                    texture: new Texture("assets/stars.png", "NEAREST")}),
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -273,6 +313,17 @@ export class BruinRun extends Base_Scene {
         
     }
 
+    draw_flyer(context, program_state, flyer_transform){
+        const path_color = hex_color("#e717e7");
+
+        if(this.flyer_size < 7){
+            this.flyer_size +=0.2;
+        }
+
+        // Draw walkway 
+        this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer1);
+    }
+
     draw_lightpost(context, program_state, lightpost_transform) {
         const pole_color = hex_color("#30404f");
         const light_color = hex_color("#eae9a9");
@@ -316,7 +367,6 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_back), this.materials.plastic.override( {color: bench_color}))
         this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_bottom), this.materials.plastic.override( {color: bench_color}))
         this.shapes.cube.draw(context, program_state, bench_transform.times(bench.seat_pole), this.materials.plastic.override( {color: bench_color}))
-
 
     }
 
@@ -513,9 +563,11 @@ export class BruinRun extends Base_Scene {
                 for(let i = 0; i < 6; i++){
                     if(rounded_person_x - 3 + i === starship_x){ 
                         collision = true; 
+                        this.collision = true; 
                         if (this.isJumping){
                             if ( this.person_y > 13) {
                                 collision = false; 
+                                this.collision = false; 
                                 this.on_starship = true; 
                             }
                         }
@@ -539,6 +591,7 @@ export class BruinRun extends Base_Scene {
                 for( let i = 0; i < 6; i++){
                     if( Math.round(flyer_x - 3 + i) == rounded_person_x){
                         collision = true; 
+                        this.collision = true; 
                     }
                 }
             }
@@ -1097,7 +1150,13 @@ export class BruinRun extends Base_Scene {
 
        if(!this.detach_camera){
             //Use the default camera position
-            program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));       
+            program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));     
+       }
+
+       // if there is collision, present flyer to camera 
+       // maybe place this inside the previous if statement
+       if(this.collision){
+            this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
        }
     }
 }
