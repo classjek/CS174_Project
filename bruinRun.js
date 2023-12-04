@@ -97,11 +97,12 @@ class Base_Scene extends Scene {
 
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
-        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
+        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(0,-70,-1.5)).times(Mat4.scale(12,100,2));
         this.sky_transform = Mat4.translation(-5,25,-60).times(Mat4.scale(70,320,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
         this.person_y = 10;
+        this.person_x = 0;
 
         // for jumping mechanic
         this.isJumping = false;
@@ -359,7 +360,6 @@ export class BruinRun extends Base_Scene {
         const pole_color = hex_color("#30404f");
         const light_color = hex_color("#eae9a9");
         const banner_color = hex_color("#0058eb");
-        const temp_color = hex_color("#ff00f0")
         
         let lightpost = {
             pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.4,.4,14,1)),
@@ -376,7 +376,6 @@ export class BruinRun extends Base_Scene {
     }
 
     draw_bench(context, program_state, bench_transform) {
-        //BENCH_TRANSFORM = WHERE YOU WANT THE BENCH
         const bench_color = hex_color("#38424c");
 
         let bench = {
@@ -518,10 +517,12 @@ export class BruinRun extends Base_Scene {
         if(this.moveRight){
             //this.person_transform = this.person_transform.times(Mat4.translation(0.5, 0, 0));
             this.person_transform = this.person_transform.times(Mat4.translation(0.2, 0, 0));
+            this.person_x = this.person_transform[0][3];
         }
         if(this.moveLeft){
             //this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
             this.person_transform = this.person_transform.times(Mat4.translation(-0.2, 0, 0));
+            this.person_x = this.person_transform[0][3];
         }
         if(this.moveForward){
             // because inverted z axis 
@@ -913,36 +914,51 @@ export class BruinRun extends Base_Scene {
 
         let bench_pos = Mat4.translation(-15,3,5);
         for (let i = 0; i < 4; i++) {
-            this.draw_bench(context, program_state, bench_pos);
+            if (bench_pos[2][3] < this.person_z +10) {
+                this.draw_bench(context, program_state, bench_pos);
+            }
             let move_bench = Mat4.translation(0,0,-20*i);
             let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
 
-            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
-            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
-            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+            if (bench_pos.times(scene_translation).times(move_bench)[2][3] < this.person_z + 10) {
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+            }
+
         }
 
         for (let i = 1; i < 4; i++) {
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
-            let move_lightpost = Mat4.translation(0,0,-20*i);
-            let flip_lightpost = Mat4.translation(20,0,-5);
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+            if (this.lightpost_pos[2][3] < this.person_z+10) {
+                this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
 
+            }
+                let move_lightpost = Mat4.translation(0,0,-20*i);
+                let flip_lightpost = Mat4.translation(20,0,-5);
+                if (this.lightpost_pos.times(scene_translation).times(move_lightpost)[2][3] < this.person_z+10) {
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+        
+                }
         }
 
 
 
         //right now Ackerman is 40 units long I think
         let ack_pos = Mat4.translation(19,12,-2).times(Mat4.rotation(Math.PI/40,0,-1,0)).times(scene_translation).times(Mat4.scale(5,12,10));
-        this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
+        if (ack_pos[2][3] < this.person_z +10) {
+            this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
+        }
         ack_pos =  ack_pos.times(Mat4.translation(0,0,-2));
-        this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
+        if (ack_pos[2][3] < this.person_z +10) {
+            this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
+        }        
         ack_pos =  ack_pos.times(Mat4.translation(0,0,-2));
-        this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
-        ack_pos =  ack_pos.times(Mat4.translation(0,0,-2));
-        this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
+        if (ack_pos[2][3] < this.person_z +10) {
+            this.shapes.cube.draw(context, program_state, ack_pos, this.materials.ack_texture);
+        }
+
 
 
         //Background: More trees behind all the trees
@@ -955,12 +971,16 @@ export class BruinRun extends Base_Scene {
 
         for (var i = 0; i < 10; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
-            this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
+                this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            }
         }
         forest_trans = Mat4.translation(-15,-2,-8);
         for (var i = 0; i < 10; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
-            this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
+                this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            }
         }
 
 
@@ -993,23 +1013,33 @@ export class BruinRun extends Base_Scene {
 
         let bench_pos = Mat4.translation(-15,3,5);
         for (let i = 0; i < 4; i++) {
-            this.draw_bench(context, program_state, bench_pos);
+            if (bench_pos[2][3] < this.person_z +10) {
+                this.draw_bench(context, program_state, bench_pos);
+            }
             let move_bench = Mat4.translation(0,0,-20*i);
             let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
 
-            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
-            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
-            this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+            if (bench_pos.times(scene_translation).times(move_bench)[2][3] < this.person_z + 10) {
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+            }
+
         }
 
         for (let i = 1; i < 4; i++) {
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
-            let move_lightpost = Mat4.translation(0,0,-20*i);
-            let flip_lightpost = Mat4.translation(20,0,-5);
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
-            this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+            if (this.lightpost_pos[2][3] < this.person_z+10) {
+                this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation));
 
+            }
+                let move_lightpost = Mat4.translation(0,0,-20*i);
+                let flip_lightpost = Mat4.translation(20,0,-5);
+                if (this.lightpost_pos.times(scene_translation).times(move_lightpost)[2][3] < this.person_z+10) {
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lightpost));
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost));
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(flip_lightpost).times(move_lightpost));
+        
+                }
         }
 
         let lawn_trans = Mat4.translation(23,2,-27).times(Mat4.rotation(Math.PI/2.5,0,0,-1)).times(Mat4.scale(.1,10,50));
@@ -1038,12 +1068,16 @@ export class BruinRun extends Base_Scene {
 
         for (var i = 0; i < 10; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
-            this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
+                this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            }
         }
         forest_trans = Mat4.translation(-15,-2,-8);
         for (var i = 0; i < 10; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
-            this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
+                this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            }
         }
 
 
@@ -1164,12 +1198,20 @@ export class BruinRun extends Base_Scene {
 
        
        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
+
+       if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
+        this.draw_starship(context, program_state, this.bot_transform);
+       }
+
        //stationary starship for collision testing
-       this.draw_starship(context, program_state, this.bot_transform);
        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
-       this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
+        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       }
        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
-       this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
+        this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+       }
        
         let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
