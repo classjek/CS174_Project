@@ -97,7 +97,7 @@ class Base_Scene extends Scene {
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
         this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(-5,-70,-1.5)).times(Mat4.scale(16,100,2));
-        this.sky_transform = Mat4.translation(-5,25,-60).times(Mat4.scale(70,40,1));
+        this.sky_transform = Mat4.translation(-5,25,-60).times(Mat4.scale(70,320,1));
 
         this.person_z = 10;  //used to identify WHERE the person is in the scene
         this.person_y = 10;
@@ -170,6 +170,7 @@ class Base_Scene extends Scene {
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             'cube': new Cube(),
+            'ground': new Cube(),
             'walkway': new Walk(),
             'trapezoid': new Trapezoid(),
             'cylinder': new defs.Cylindrical_Tube(10,10),
@@ -179,6 +180,11 @@ class Base_Scene extends Scene {
             'bot': new defs.Rounded_Capped_Cylinder(35,35),
             'flyer': new Flyer(),
         };
+
+        this.shapes.ground.arrays.texture_coord.forEach(coord => {
+            coord[0] *= 12; // scale s coordinate
+            coord[1] *= 12; // scale t coordinate
+        });
 
         // *** Materials
         this.materials = {
@@ -204,6 +210,9 @@ class Base_Scene extends Scene {
             flyer1: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                     texture: new Texture("assets/stars.png", "NEAREST")}),
+            bump: new Material(new defs.Fake_Bump_Map(),
+                {   ambient: 1, diffusivity: 0.1, color: hex_color("#000000"),
+                    texture: new Texture("assets/Asphalt.png")}),
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -392,8 +401,10 @@ export class BruinRun extends Base_Scene {
         const path_color = hex_color("#bebebe");
         const sky_color = hex_color("#1a9ffa");
 
+        walkway_transform = walkway_transform.times(Mat4.scale(2, 0.2, 1)).times(Mat4.translation(0,6, 0));
+
         // Draw walkway 
-        this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
+        this.shapes.ground.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.bump);
         // Draw sky background
          this.shapes.cube.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.sky_texture);
 
