@@ -1,5 +1,6 @@
 import {defs, tiny} from './examples/common.js';
 
+
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
 } = tiny;
@@ -131,6 +132,9 @@ class Base_Scene extends Scene {
         this.collision = false; 
         this.flyer_size = 0; 
 
+        // for randomization of flyers
+        this.rando = Math.floor(Math.random() * 5) + 1;
+
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -208,8 +212,20 @@ class Base_Scene extends Scene {
                 {   ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/text.png", "NEAREST")}),
             flyer1: new Material(new defs.Textured_Phong(),
-                    {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
-                    texture: new Texture("assets/stars.png", "NEAREST")}),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer1.jpg", "NEAREST")}),
+            flyer2: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer2.jpg", "NEAREST")}),
+            flyer3: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer3.jpg", "NEAREST")}),
+            flyer4: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer4.jpg", "NEAREST")}),
+            flyer5: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer5.jpg", "NEAREST")}),
             bump: new Material(new defs.Fake_Bump_Map(),
                 {   ambient: 1, diffusivity: 0.1, color: hex_color("#000000"),
                     texture: new Texture("assets/Asphalt.png")}),
@@ -315,8 +331,29 @@ export class BruinRun extends Base_Scene {
             this.flyer_size +=0.2;
         }
 
-        // Draw walkway 
-        this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer1);
+        let randomNumber = this.rando;
+        console.log(randomNumber);
+
+        switch(randomNumber){
+            case 1:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer1);
+                break;
+            case 2:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer2);
+                break;
+            case 3:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer3);
+                break;
+            case 4:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer4);
+                break;
+            default:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer5);
+                break;
+        }
+
+        // Draw flyer
+        //this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer1);
     }
 
     draw_lightpost(context, program_state, lightpost_transform) {
