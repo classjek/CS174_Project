@@ -258,11 +258,71 @@ export class BruinRun extends Base_Scene {
         this.rand_position = Math.floor(Math.random()*6) + 1;
 
     }
+    reset() {
+        this.hover = this.swarm = false;
+
+        // Initialize person translation here so position isn't continuously reset 
+        this.person_transform = Mat4.translation(0, 10, 10);
+
+        // Initialize walkway so it is one big piece that the character will walk over
+        // A little confused here, is this order correct? 
+        this.walkway_path_transform = Mat4.rotation(Math.PI/2,1,0,0).times(Mat4.translation(0,-120,-1.5)).times(Mat4.scale(12,150,2));
+        this.sky_transform = Mat4.translation(-5,130,-60).times(Mat4.scale(40,130,1));
+
+        this.person_z = 10;  //used to identify WHERE the person is in the scene
+        this.person_y = 10;
+        this.person_x = 0;
+
+        // for jumping mechanic
+        this.isJumping = false;
+        this.jumpHeight = 0; 
+
+        // for lateral movement
+        this.moveLeft = false;
+        this.moveRight = false; 
+        
+        // to test forward/back movement. Will eventually be automatic
+        this.moveForward = false;
+        this.moveBackward = false; 
+
+        this.running = false; 
+        this.runDist = 0; 
+        this.new_scene = false;
+        
+        // for landing on starships
+        this.on_starship = false; 
+
+        // keeps track of starship locations - only x and z matter
+        this.starship_locations = new Map();
+
+        //keeps track of flyer persons
+        // This map currently has two elements, one to keep track of the flyerperson's x movement and the other to keep track of their rotation
+        this.flyerperson_info = new Map();
+
+        // keep track of if a collision has been triggered
+        this.collision = false; 
+        this.star_collision = false; 
+        this.starflyer_delay = 0; 
+        this.flyer_size = 0; 
+
+        // for randomization of flyers
+        this.rando = Math.floor(Math.random() * 5) + 1;
+
+
+        this.detach_camera = false;
+
+        // Why are some things here and some things in the Base_Scene constructor?
+        this.bot_transform = Mat4.translation(-3,4,0);
+        this.flyerperson_transform = Mat4.translation(8,10,7);
+
+        this.lightpost_pos = Mat4.translation(-18,9,0).times(Mat4.scale(1.5,1.5,1.5));
+        this.rand_position = Math.floor(Math.random()*6) + 1;
+    }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
 
-        this.key_triggered_button("jump", [" "], () => {
+        this.key_triggered_button("Jump", [" "], () => {
             // Person jumps
             if (!this.isJumping){
                 this.isJumping = true; 
@@ -293,6 +353,9 @@ export class BruinRun extends Base_Scene {
         })
         this.key_triggered_button("Start Game", ["Enter"], () =>{
             this.start_game = true;
+        })
+        this.key_triggered_button("Restart", ["z"], () =>{
+            this.reset();
         })
     }
 
@@ -1224,7 +1287,7 @@ export class BruinRun extends Base_Scene {
 
                 // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-        this.start_game = true;
+        //this.start_game = true;
         if(!this.start_game){
             const initial_camera_position = Mat4.translation(0, 0, -30);
 
@@ -1240,8 +1303,6 @@ export class BruinRun extends Base_Scene {
             // *** Lights: *** Values of vector or point lights.
             const light_position = vec4(5, 30, 20, 1);
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-            let t = program_state.animation_time / 1000;
-
             // Player
             this.draw_start_screen(context, program_state, Mat4.identity())
         }
