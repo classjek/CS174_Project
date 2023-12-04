@@ -135,6 +135,8 @@ class Base_Scene extends Scene {
         this.star_collision = false; 
         this.starflyer_delay = 0; 
         this.flyer_size = 0; 
+        // used to make the flyer3 person rush the player after starship collision
+        this.flyer3_inc = 0; 
 
         // for randomization of flyers
         this.rando = Math.floor(Math.random() * 5) + 1;
@@ -848,21 +850,34 @@ export class BruinRun extends Base_Scene {
     }
 
     // flyer person who appears after the player runs into a starship
-    draw_flyerperson3(context, program_state, model_transform){
+    // pass in the player's transform so the flyerperson can move to it 
+    draw_flyerperson3(context, program_state, person_transform){
         // Draws a flyer person at certain locations, just a rough draft version
        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
         // check if the player is within a certain distance
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
+
+       // make this based off of person_transform so it works at any distance
+       let model_transform = Mat4.identity().times(Mat4.translation(5, 10, person_transform[2][3] - 30));
+
+       let x_inc = model_transform[0][3] - person_transform[0][3];
+       let z_inc = model_transform[2][3] - person_transform[2][3];
+
+        model_transform[0][3] -= this.flyer3_inc * (x_inc/50); 
+        model_transform[2][3] -= this.flyer3_inc * (z_inc/50);
+        if(this.flyer3_inc < 45){
+            this.flyer3_inc += 1; 
+        }
        
-       let person = {
-           head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
-           torso_transform: Mat4.identity().times(Mat4.translation(0,-2.5,0)),
-           arms_transformL: Mat4.identity().times(Mat4.translation(0, -3, -1.5)),
-           arms_transformR: Mat4.identity().times(Mat4.translation(0, -3, 1.5)),
-           legs_transformL: Mat4.identity().times(Mat4.translation(0, -6.25, -0.5)),
-           legs_transformR: Mat4.identity().times(Mat4.translation(0, -6.25, 0.5)),
-           flyer_transform: Mat4.identity().times(Mat4.translation(0, -6, 1.5))
-       }
+        let person = {
+            head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
+            torso_transform: Mat4.identity().times(Mat4.translation(0,-2.5,0)),
+            arms_transformL: Mat4.identity().times(Mat4.translation(-1.5, -3, 0)),
+            arms_transformR: Mat4.identity().times(Mat4.translation(1.5, -3, 0)),
+            legs_transformL: Mat4.identity().times(Mat4.translation(-.5, -6.25, 0)),
+            legs_transformR: Mat4.identity().times(Mat4.translation(.5, -6.25, 0))
+        }
+       
 
        for( let matrix in person){
         person[matrix] = person[matrix].times(model_transform);
@@ -880,38 +895,31 @@ export class BruinRun extends Base_Scene {
 
        // change this so it is conditional based on if the character is moving or not
        // Walking Animation
-    //    person.arms_transformR = person.arms_transformR
-    //        .times(Mat4.translation(0, 1.75, 0))
-    //        .times(Mat4.rotation(t_reverse_arms, 1, 0, 0))
-    //        .times(Mat4.translation(0, -2, 0));
-    //    person.flyer_transform = person.arms_transformR
-    //        .times(Mat4.translation(0, -3, 0));
-    //    person.legs_transformL = person.legs_transformL
-    //        .times(Mat4.translation(0, 2.25, 0))
-    //        .times(Mat4.rotation(t_reverse, 1, 0, 0))
-    //        .times(Mat4.translation(0, -2.25, 0));         
-    //    person.legs_transformR = person.legs_transformR
-    //        .times(Mat4.translation(0, 2.25, 0))
-    //        .times(Mat4.rotation(t, 1, 0, 0))
-    //        .times(Mat4.translation(0, -2.25, 0));
+       person.arms_transformR = person.arms_transformR
+           .times(Mat4.translation(0, 1.75, 0))
+           .times(Mat4.rotation(t_reverse_arms, 1, 0, 0))
+           .times(Mat4.translation(0, -2, 0));
+       person.flyer_transform = person.arms_transformR
+           .times(Mat4.translation(0, -3, 0));
+       person.legs_transformL = person.legs_transformL
+           .times(Mat4.translation(0, 2.25, 0))
+           .times(Mat4.rotation(t_reverse, 1, 0, 0))
+           .times(Mat4.translation(0, -2.25, 0));         
+       person.legs_transformR = person.legs_transformR
+           .times(Mat4.translation(0, 2.25, 0))
+           .times(Mat4.rotation(t, 1, 0, 0))
+           .times(Mat4.translation(0, -2.25, 0));
 
        person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
        //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
-       person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
+       person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, 0.5))
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
        person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.1, 1, 0.75));
        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
-       //this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
-       // if turned, add texture to face, eventually change this texture to something funny
-       if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
-       } else {
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
-       }
-
+        this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
         this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
@@ -1336,6 +1344,7 @@ export class BruinRun extends Base_Scene {
             // if collision, render flyer. Have a delay if the player ran into a starship 
             if(this.star_collision){
                 if(this.starflyer_delay < 50){
+                    this.draw_flyerperson3(context, program_state, this.person_transform);
                     this.starflyer_delay += 1; 
                 } else {
                     this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
