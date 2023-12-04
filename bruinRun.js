@@ -203,6 +203,9 @@ class Base_Scene extends Scene {
             sky_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/sky.jpg", "NEAREST")}),
+            grass_texture: new Material(new defs.Textured_Phong(),
+                {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
+                texture: new Texture("assets/grass.jpg", "NEAREST")}),
             start_screen: new Material(new defs.Textured_Phong(),
                 {
                     color: hex_color("#000000"),
@@ -1073,14 +1076,14 @@ export class BruinRun extends Base_Scene {
 
         let tree_scale = Mat4.scale(1.5,2,1.5);
 
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 15; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
             if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
                 this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
             }
         }
         forest_trans = Mat4.translation(-15,-2,-8);
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 15; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
             if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
                 this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
@@ -1172,14 +1175,14 @@ export class BruinRun extends Base_Scene {
 
         let tree_scale = Mat4.scale(1.5,2,1.5);
 
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 15; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
             if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
                 this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
             }
         }
         forest_trans = Mat4.translation(-15,-2,-8);
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 15; i++) {
             let move_forest = Mat4.translation(0,0,-6*i);
             if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
                 this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
@@ -1188,6 +1191,88 @@ export class BruinRun extends Base_Scene {
 
 
 
+    }
+
+    draw_scene_janss(context, program_state, scene_translation = Mat4.identity()) {
+        let tree1_pos = Mat4.translation(10,13,1,1);
+        let tree2_pos = Mat4.translation(-21, 13, 1,1);
+
+        let trees = [tree1_pos];
+
+
+        // Draw more trees
+        trees.forEach(tree => {
+            let tree_scale = Mat4.scale(1.2,1.2,1.2);
+            this.draw_tree(context, program_state, tree.times(scene_translation).times(Mat4.translation(0,-2.5,0)).times(tree_scale));
+            let further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -20)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(0, -2.5, -30)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -45)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+            further_tree = tree.times(scene_translation).times(Mat4.translation(2, -2.5, -60)).times(tree_scale);
+            this.draw_tree(context, program_state, further_tree);
+        })
+
+        let floor_pos = Mat4.translation(33,1,-30).times(Mat4.scale(15,1,50));
+        this.shapes.cube.draw(context, program_state, floor_pos, this.materials.plastic.override( {color: hex_color("#493527")}));
+
+        let forest_trans = Mat4.translation(-8,-2,-11);
+
+        let tree_scale = Mat4.scale(1.5,2,1.5);
+
+        for (var i = 0; i < 10; i++) {
+            let move_forest = Mat4.translation(50,0,-6*i);
+            if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
+                this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            }
+        }
+        forest_trans = Mat4.translation(47,-2,-8);
+        for (var i = 0; i < 10; i++) {
+            let move_forest = Mat4.translation(0,0,-6*i);
+            if (tree2_pos.times(forest_trans).times(move_forest).times(scene_translation)[2][3] < this.person_z + 10) {
+                this.draw_tree(context, program_state, tree2_pos.times(forest_trans).times(move_forest).times(scene_translation).times(tree_scale));
+            }
+        }
+
+
+        let bench_pos = Mat4.translation(-15,3,5);
+        for (let i = 0; i < 4; i++) {
+            if (bench_pos[2][3] < this.person_z +10) {
+                this.draw_bench(context, program_state, bench_pos);
+            }
+            let move_bench = Mat4.translation(0,0,-20*i);
+            let flip_bench = Mat4.translation(22,0,2).times(Mat4.scale(-1,1,1));
+
+            if (bench_pos.times(scene_translation).times(move_bench)[2][3] < this.person_z + 10) {
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(move_bench));
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench));
+                this.draw_bench(context, program_state, bench_pos.times(scene_translation).times(flip_bench).times(move_bench));
+            }
+
+        }
+
+        let move_lights = Mat4.translation(0,0,60);
+
+        for (let i = 1; i < 4; i++) {
+            if (this.lightpost_pos[2][3] < this.person_z+10) {
+                this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lights));
+
+            }
+                let move_lightpost = Mat4.translation(0,0,-20*i);
+                let flip_lightpost = Mat4.translation(20,0,-5);
+                if (this.lightpost_pos.times(scene_translation).times(move_lightpost)[2][3] < this.person_z+10) {
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lights).times(move_lightpost));
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lights).times(flip_lightpost));
+                    this.draw_lightpost(context, program_state, this.lightpost_pos.times(scene_translation).times(move_lights).times(flip_lightpost).times(move_lightpost));
+        
+                }
+        }
+
+
+        //LAWN
+        let lawn_trans = Mat4.translation(-65,8,-100).times(Mat4.rotation(Math.PI/6,0,1,0)).times(Mat4.rotation(Math.PI/9,1,0,0)).times(Mat4.scale(25,10,45));
+        this.shapes.cube.draw(context, program_state, scene_translation.times(lawn_trans), this.materials.grass_texture)
     }
 
     draw_scene(context, program_state, scene_translation = Mat4.identity()) {
@@ -1327,23 +1412,34 @@ export class BruinRun extends Base_Scene {
             this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
             this.person_z = this.person_transform[2][3];
         }
+        else if (this.person_z <= -127 && this.person_z > -170) {
+            this.new_scene = false;
+            let move_scene = Mat4.translation(0,0,-135);
+
+            this.draw_scene_janss(context, program_state, move_scene);
+        }
+        else {
+            //END GAME
+            this.running = false;
+            this.moveForward = false;
+        }
 
 
         let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
 
-           if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
-    this.draw_starship(context, program_state, this.bot_transform);
-   }
+                if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
+            this.draw_starship(context, program_state, this.bot_transform);
+        }
 
-   //stationary starship for collision testing
-   bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
-   if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
-    this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-   }
-   bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
-   if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
-    this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-   }
+        //stationary starship for collision testing
+        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
+        if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
+            this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+        }
+        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
+        if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
+            this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
+        }
 
     let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
 
