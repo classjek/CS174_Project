@@ -442,7 +442,6 @@ export class BruinRun extends Base_Scene {
         this.shapes.ground.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.bump);
         // Draw sky background
          this.shapes.cube.draw(context, program_state, walkway_transform.times(this.sky_transform), this.materials.sky_texture);
-
     }
 
     draw_person(context, program_state, model_transform = Mat4.identity()) {
@@ -515,14 +514,16 @@ export class BruinRun extends Base_Scene {
         // Left/Right Movement
         // Once course is done, add bounds so character can't move off the course/offscreen
         if(this.moveRight){
-            //this.person_transform = this.person_transform.times(Mat4.translation(0.5, 0, 0));
-            this.person_transform = this.person_transform.times(Mat4.translation(0.2, 0, 0));
-            this.person_x = this.person_transform[0][3];
+            if (this.person_x < 4.5) {
+                this.person_transform = this.person_transform.times(Mat4.translation(0.2, 0, 0));
+                this.person_x = this.person_transform[0][3];
+            }
         }
         if(this.moveLeft){
-            //this.person_transform = this.person_transform.times(Mat4.translation(-0.5, 0, 0));
-            this.person_transform = this.person_transform.times(Mat4.translation(-0.2, 0, 0));
-            this.person_x = this.person_transform[0][3];
+            if ( this.person_x > -12.5) {
+                this.person_transform = this.person_transform.times(Mat4.translation(-0.2, 0, 0));
+                this.person_x = this.person_transform[0][3];
+            }
         }
         if(this.moveForward){
             // because inverted z axis 
