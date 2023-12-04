@@ -116,12 +116,6 @@ class Base_Scene extends Scene {
 
         this.running = false; 
         this.runDist = 0; 
-
-        // to test flagship stuff DELELTE Later
-        this.flagship_transform = 0; 
-        this.key_check = true;
-        this.before = false;
-        this.after = false; 
         
         // for landing on starships
         this.on_starship = false; 
@@ -184,14 +178,6 @@ class Base_Scene extends Scene {
             'cone': new defs.Rounded_Closed_Cone(20,20),
             'bot': new defs.Rounded_Capped_Cylinder(35,35),
             'flyer': new Flyer(),
-        };
-
-        // Bounding Box for Person ->  use later for collisions
-        // need to write updateBoundingBox function and call it inside draw_person
-        // DELETE THIS
-        this.personBoundingBox = {
-            min: { x: 0, y: 0, z: 0 },
-            max: { x: 0, y: 0, z: 0 }
         };
 
         // *** Materials
@@ -347,7 +333,6 @@ export class BruinRun extends Base_Scene {
     draw_bench(context, program_state, bench_transform) {
         //BENCH_TRANSFORM = WHERE YOU WANT THE BENCH
         const bench_color = hex_color("#38424c");
-        //const bench_color = hex_color("#ff0000")
 
         let bench = {
             table: Mat4.translation(-.2,1,0).times(Mat4.scale(1.6,.1,1.8)),
@@ -357,7 +342,6 @@ export class BruinRun extends Base_Scene {
             seat_back: Mat4.translation(-3.6,1,0).times(Mat4.rotation(Math.PI/10,-1,0,5)).times(Mat4.scale(.1,1,2)),
             seat_bottom: Mat4.translation(-2.5,0,0).times(Mat4.rotation(Math.PI/2, 0,0,1)).times(Mat4.scale(.1,1,2)),
             seat_pole: Mat4.rotation(Math.PI/2,5,0,0).times(Mat4.scale(.2,.2,.5,1)).times(Mat4.translation(-12,0,1)),
-
         }
 
         this.shapes.cylinder.draw(context, program_state, bench_transform.times(bench.pole1), this.materials.plastic.override({ color: bench_color}))
@@ -376,12 +360,6 @@ export class BruinRun extends Base_Scene {
         const flag_color = hex_color("#f69509");
 
         // Keep track of starship locations for collision detection
-        // may or may not use this depending on how the scene is populated with starships
-        // with predictable z coordinates, this won't be necessary
-        if(this.key_check){
-            console.log('bot y location', bot_transform[2][3]);
-            this.key_check = false; 
-        }
         this.starship_locations.set(bot_transform[2][3], bot_transform[0][3]);
 
 
@@ -413,9 +391,6 @@ export class BruinRun extends Base_Scene {
     draw_walkway(context, program_state, walkway_transform) {
         const path_color = hex_color("#bebebe");
         const sky_color = hex_color("#1a9ffa");
-
-       //TODO: Move sky w/ person
-
 
         // Draw walkway 
         this.shapes.trapezoid.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.plastic.override( {color: path_color}))
@@ -481,19 +456,18 @@ export class BruinRun extends Base_Scene {
             person[matrix] = person[matrix].times(model_transform); 
         }
 
-        // change this later to just wrap around the movement stuff
-        // if(this.collision){
-        //     this.moveRight = false; 
-        //     this.moveLeft = false; 
-        //     this.running = false; 
-        //     this.moveForward = false;
-        //     this.moveBackward = false; 
-        // }
+        // if there is a collision, stop all movement
+        // I guess you can still jump but you won't even be able to see 
+        if(this.collision){
+            this.moveRight = false; 
+            this.moveLeft = false; 
+            this.running = false; 
+            this.moveForward = false;
+            this.moveBackward = false; 
+        }
 
         // Left/Right Movement
         // Once course is done, add bounds so character can't move off the course/offscreen
-        // decide if we want the camera to follow the character or not
-        // change these for collision testing
         if(this.moveRight){
             //this.person_transform = this.person_transform.times(Mat4.translation(0.5, 0, 0));
             this.person_transform = this.person_transform.times(Mat4.translation(0.2, 0, 0));
@@ -522,7 +496,6 @@ export class BruinRun extends Base_Scene {
 
         }
         if(this.running){
-            // add more to this function once collision detection is done
             this.runDist +=1; 
             // translate sky and person
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
@@ -537,7 +510,6 @@ export class BruinRun extends Base_Scene {
         let t = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x);
         let t_reverse = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
 
-        // change this so it is conditional based on if the character is moving or not
         // Walking Animation
         if (this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.running) {
             person.arms_transformL = person.arms_transformL
@@ -637,9 +609,6 @@ export class BruinRun extends Base_Scene {
     draw_flyerperson(context, program_state, model_transform){
          // Draws a flyer person at certain locations, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
-
-        // Check if there is a collision
-        //console.log('Person z and x', model_transform[0][3], model_transform[2][3]);
 
         const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
 
@@ -1174,9 +1143,9 @@ export class BruinRun extends Base_Scene {
 
        // if there is collision, present flyer to camera 
        // maybe place this inside the previous if statement
-    //    if(this.collision){
-    //         this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
-    //    }
+       if(this.collision){
+            this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
+       }
     }
 }
 }
