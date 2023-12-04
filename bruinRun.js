@@ -1308,13 +1308,27 @@ export class BruinRun extends Base_Scene {
             this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
             this.person_z = this.person_transform[2][3];
         }
-        else if ( this.person_z <= -63) {
+        else if ( this.person_z <= -63 && this.person_z > -125) {
             this.new_scene = false;
-            let move_scene = Mat4.translation(0,0,-75);
+            let move_scene = Mat4.translation(0,0,-65);
 
             this.draw_scene_kerck(context, program_state, move_scene);
-    
+
+                        //add barricade
+            let poster_trans = Mat4.translation(6,3.8,-140).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
+            this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
+            for (let i = 1; i < 5; i++) {
+                poster_trans = poster_trans.times(Mat4.translation(-2.4,0,0));
+                this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
+            }
         }
+        else if (this.person_z < -125 && this.person_z > -126) {
+            this.new_scene = true;
+            this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
+            this.person_z = this.person_transform[2][3];
+        }
+
+
         let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
 
            if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
