@@ -613,7 +613,6 @@ export class BruinRun extends Base_Scene {
             this.person_transform = this.person_transform.times(Mat4.translation(0, 0, 0.2));
             this.person_z = this.person_transform[2][3]; 
             this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,0.2));
-
         }
         if(this.running){
             this.runDist +=1; 
@@ -923,6 +922,8 @@ export class BruinRun extends Base_Scene {
        // make this based off of person_transform so it works at any distance
        let model_transform = Mat4.identity().times(Mat4.translation(5, 10, person_transform[2][3] - 30));
 
+       let isWalking = true; 
+
        let x_inc = model_transform[0][3] - person_transform[0][3];
        let z_inc = model_transform[2][3] - person_transform[2][3];
 
@@ -930,6 +931,8 @@ export class BruinRun extends Base_Scene {
         model_transform[2][3] -= this.flyer3_inc * (z_inc/50);
         if(this.flyer3_inc < 45){
             this.flyer3_inc += 1; 
+        } else {
+            isWalking = false; 
         }
        
         let person = {
@@ -938,7 +941,8 @@ export class BruinRun extends Base_Scene {
             arms_transformL: Mat4.identity().times(Mat4.translation(-1.5, -3, 0)),
             arms_transformR: Mat4.identity().times(Mat4.translation(1.5, -3, 0)),
             legs_transformL: Mat4.identity().times(Mat4.translation(-.5, -6.25, 0)),
-            legs_transformR: Mat4.identity().times(Mat4.translation(.5, -6.25, 0))
+            legs_transformR: Mat4.identity().times(Mat4.translation(.5, -6.25, 0)),
+            //flyer_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6, 1.5)),
         }
        
 
@@ -958,27 +962,24 @@ export class BruinRun extends Base_Scene {
 
        // change this so it is conditional based on if the character is moving or not
        // Walking Animation
-       person.arms_transformR = person.arms_transformR
-           .times(Mat4.translation(0, 1.75, 0))
-           .times(Mat4.rotation(t_reverse_arms, 1, 0, 0))
-           .times(Mat4.translation(0, -2, 0));
-       person.flyer_transform = person.arms_transformR
-           .times(Mat4.translation(0, -3, 0));
-       person.legs_transformL = person.legs_transformL
-           .times(Mat4.translation(0, 2.25, 0))
-           .times(Mat4.rotation(t_reverse, 1, 0, 0))
-           .times(Mat4.translation(0, -2.25, 0));         
-       person.legs_transformR = person.legs_transformR
-           .times(Mat4.translation(0, 2.25, 0))
-           .times(Mat4.rotation(t, 1, 0, 0))
-           .times(Mat4.translation(0, -2.25, 0));
+       if(isWalking){
+        person.arms_transformL = person.arms_transformL
+                .times(Mat4.translation(0, 2, 0))
+                .times(Mat4.rotation(t, 1, 0, 0))
+                .times(Mat4.translation(0, -2, 0));
+        person.arms_transformR = person.arms_transformR
+                .times(Mat4.translation(0, 2, 0))
+                .times(Mat4.rotation(t_reverse, 1, 0, 0))
+                .times(Mat4.translation(0, -2, 0));
+        person.legs_transformL = person.legs_transformL.times(Mat4.translation(0, 2.25, 0)).times(Mat4.rotation(t_reverse, 1, 0, 0)).times(Mat4.translation(0, -2.25, 0));         
+        person.legs_transformR = person.legs_transformR.times(Mat4.translation(0, 2.25, 0)).times(Mat4.rotation(t, 1, 0, 0)).times(Mat4.translation(0, -2.25, 0));
+       }
 
        person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
        //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
        person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, 0.5))
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
-       person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.1, 1, 0.75));
        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
@@ -986,7 +987,6 @@ export class BruinRun extends Base_Scene {
        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
         this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, person.flyer_transform, this.materials.plastic.override(green));
         this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
@@ -1409,7 +1409,7 @@ export class BruinRun extends Base_Scene {
                     this.starflyer_delay += 1; 
                 } else {
                     this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
-
+                    this.draw_flyerperson3(context, program_state, this.person_transform);
                 }
             } else {
                 this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
