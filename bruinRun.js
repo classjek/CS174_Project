@@ -332,7 +332,6 @@ export class BruinRun extends Base_Scene {
         }
 
         let randomNumber = this.rando;
-        console.log(randomNumber);
 
         switch(randomNumber){
             case 1:
