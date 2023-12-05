@@ -220,6 +220,7 @@ class Base_Scene extends Scene {
             gene: new Material(new defs.Textured_Phong(), 
                 {   ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/text.png", "NEAREST")}),
+
             flyer1: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/Flyer1.jpg", "NEAREST")}),
@@ -326,6 +327,9 @@ export class BruinRun extends Base_Scene {
 
         this.lightpost_pos = Mat4.translation(-18,9,0).times(Mat4.scale(1.5,1.5,1.5));
         this.rand_position = Math.floor(Math.random()*6) + 1;
+
+        this.enemies = [];
+        this.set = false;
     }
 
     make_control_panel() {
@@ -1359,7 +1363,7 @@ export class BruinRun extends Base_Scene {
         }
     }
 
-    draw_enemies(context, program_state, t){
+    draw_enemies(context, program_state, t, enemies_trans = Mat4.identity()){
         console.log(this.enemies);
         for(let i = 0; i < (this.scene_length / this.spacing); i++)
         {
@@ -1370,12 +1374,12 @@ export class BruinRun extends Base_Scene {
                 // x moves the person along the z axis, and z moves along the x axis (idk why)
                 // +x -> further away, -x -> closer (reverse of the other two z-axis)
                 let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1]);
-                this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(translation));
+                this.draw_flyerperson(context, program_state, enemies_trans.times(this.flyerperson_transform).times(translation));
             } 
             else if (this.enemies[i][0] === 2){ // stationary flyerperson
                 let translation = Mat4.translation(0, 0, z - 10);
                 if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
-                    this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(translation));
+                    this.draw_flyerperson2(context, program_state, enemies_trans.times(this.flyerperson_transform).times(translation));
                 }
             }
             else if (this.enemies[i][0] === 3) // starship
@@ -1383,7 +1387,7 @@ export class BruinRun extends Base_Scene {
                 let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
                 let translation = Mat4.translation(bot_motion, 0, z);
                 if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
-                    this.draw_starship(context, program_state, this.bot_transform.times(translation));
+                    this.draw_starship(context, program_state, enemies_trans.times(this.bot_transform).times(translation));
                 }
             }
         }
@@ -1437,7 +1441,12 @@ export class BruinRun extends Base_Scene {
 
 
         if (this.person_z > -60) {
-            let move_scene = Mat4.translation(0,0,0);    
+            let move_scene = Mat4.translation(0,0,0);  
+            
+            if (!this.set){
+                this.set_enemies(60, 15);
+            }
+            this.draw_enemies(context, program_state, t);
     
             this.draw_scene_ack(context, program_state, move_scene);
 
@@ -1453,10 +1462,17 @@ export class BruinRun extends Base_Scene {
             this.new_scene = true;
             this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
             this.person_z = this.person_transform[2][3];
+            this.set = false;
         }
         else if ( this.person_z <= -63 && this.person_z > -125) {
             this.new_scene = false;
             let move_scene = Mat4.translation(0,0,-65);
+            let move_enemies = Mat4.translation(65,0,0);
+
+            if (!this.set){
+                this.set_enemies(60, 15);
+            }
+            this.draw_enemies(context, program_state, t, move_enemies);
 
             this.draw_scene_kerck(context, program_state, move_scene);
 
@@ -1472,10 +1488,17 @@ export class BruinRun extends Base_Scene {
             this.new_scene = true;
             this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
             this.person_z = this.person_transform[2][3];
+            this.set = false;
         }
         else if (this.person_z <= -127 && this.person_z > -170) {
             this.new_scene = false;
             let move_scene = Mat4.translation(0,0,-135);
+
+            let move_enemies = Mat4.translation(135,0,0);
+            if (!this.set){
+                this.set_enemies(40, 15);
+            }
+            this.draw_enemies(context, program_state, t, move_enemies);
 
             this.draw_scene_janss(context, program_state, move_scene);
         }
@@ -1487,10 +1510,10 @@ export class BruinRun extends Base_Scene {
 
         // Spawn enemies
         // Haven't yet programmed people not hitting tables, but may can adjust spacing? 
-        if (!this.set){
-            this.set_enemies(60, 15);
-        }
-        this.draw_enemies(context, program_state, t);
+        // if (!this.set){
+        //     this.set_enemies(60, 15);
+        // }
+        // this.draw_enemies(context, program_state, t);
        
        if(!this.detach_camera){
             //Use the default camera position
