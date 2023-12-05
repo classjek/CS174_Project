@@ -189,6 +189,7 @@ class Base_Scene extends Scene {
             'cone': new defs.Rounded_Closed_Cone(20,20),
             'bot': new defs.Rounded_Capped_Cylinder(35,35),
             'flyer': new Flyer(),
+            'map': new Flyer(),
         };
 
         this.shapes.ground.arrays.texture_coord.forEach(coord => {
@@ -435,6 +436,26 @@ export class BruinRun extends Base_Scene {
         //this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer1);
     }
 
+    draw_map(context, program_state, map_transform, person_trans){
+        const bg_map_color = hex_color("#959090");
+        const person_marker = hex_color("#ff0000"); 
+
+        //console.log(this.person_z);
+
+        let move_y = -(this.person_z - 10)/60; 
+        let move_x = person_trans[0][3]/60 
+        let marker_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
+        console.log(move_x);
+
+        //draw person 
+        //let person_transform = map_transform.times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1)).times(Mat4.translation(0, 0, 0));
+        let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1)).times(Mat4.translation(0, 0, 0));
+        this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
+        // draw base map 
+        map_transform = map_transform.times(Mat4.scale(0.8, 1.2, 0.8));
+        this.shapes.map.draw(context, program_state, map_transform, this.materials.plastic.override( {color: bg_map_color}));
+    }
+
     draw_lightpost(context, program_state, lightpost_transform) {
         const pole_color = hex_color("#30404f");
         const light_color = hex_color("#eae9a9");
@@ -546,7 +567,7 @@ export class BruinRun extends Base_Scene {
                 // Fix this confusing if statement
                 if ((Math.round(this.person_y * 2) == 27) && (this.jumpHeight > 25)){
                     // Remove this
-                    console.log('player on starship', this.person_y);
+                    //console.log('player on starship', this.person_y);
                 } else {
                     this.jumpHeight +=1; 
                     if (this.jumpHeight > 50){
@@ -710,7 +731,7 @@ export class BruinRun extends Base_Scene {
                 // collision = true; 
                 let flyer_x = this.flyerperson_info.get(key).x_pos;
                 let rounded_person_x = Math.round(model_transform[0][3]);
-                console.log('flyer ', flyer_x, ' person ', rounded_person_x);
+                //console.log('flyer ', flyer_x, ' person ', rounded_person_x);
                 for( let i = 0; i < 6; i++){
                     if( Math.round(flyer_x - 3 + i) == rounded_person_x){
                         collision = true; 
@@ -809,14 +830,14 @@ export class BruinRun extends Base_Scene {
 
         // set the key to z axis as it is somewhat unique and won't change throughout
             let key = model_transform[2][3];
-            console.log('key at', key);
+            //console.log('key at', key);
         // check if the player is within a certain distance
         if( (this.person_z - model_transform[2][3]) < 10){
             // if not in map and in range
             // if (!target.has(key))
             if(!this.flyerperson_info.has(key)){
                 // add flyerperson2 to map
-                console.log('initialize map');
+                //console.log('initialize map');
                 this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3]}); 
             } else { // if they are initialized -> movement cycle has started 
                 let flyerP = this.flyerperson_info.get(key);
@@ -1363,8 +1384,8 @@ export class BruinRun extends Base_Scene {
         }
     }
 
-    draw_enemies(context, program_state, t, enemies_trans = Mat4.identity()){
-        console.log(this.enemies);
+    draw_enemies(context, program_state, t){
+        //console.log(this.enemies);
         for(let i = 0; i < (this.scene_length / this.spacing); i++)
         {
             let z = -1 * i * this.spacing;
@@ -1517,7 +1538,10 @@ export class BruinRun extends Base_Scene {
        
        if(!this.detach_camera){
             //Use the default camera position
-            program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));     
+            program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)))); 
+            
+            // draw map 
+            this.draw_map(context, program_state, this.person_transform.times(Mat4.translation(-4, -2, 12)), this.person_transform);
        }
 
        // if there is collision, present flyer to camera 
