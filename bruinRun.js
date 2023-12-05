@@ -260,8 +260,12 @@ export class BruinRun extends Base_Scene {
         this.flyerperson_transform = Mat4.translation(8,10,7);
 
         this.lightpost_pos = Mat4.translation(-18,9,0).times(Mat4.scale(1.5,1.5,1.5));
-        this.rand_position = Math.floor(Math.random()*6) + 1;
 
+        // Used by set_enemies() and draw_enemies()
+        this.enemies = [];
+        this.set = false;
+        this.scene_length = 30;
+        this.spacing = 10;
     }
     reset() {
         this.hover = this.swarm = false;
@@ -1326,7 +1330,64 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, model_transform, this.materials.start_screen);
     }
 
+    set_enemies(scene_length, spacing){
+        // Use this function ONCE PER SCENE to set random enemy types and locations
+        // @spacing : spacing between enemies
 
+        this.scene_length = scene_length;
+        this.spacing = spacing; 
+        this.enemies.length = 0; // clear previous array
+        this.set = true;
+
+        for (let i = 0; i < scene_length / spacing; i++) 
+        {
+            let enemy = Math.floor(Math.random() * 3) + 1;
+            let location;
+
+            switch (enemy) {
+                case 1: // walking flyerperson
+                    location = Math.floor(Math.random()*26);
+                    break;
+                case 2: // stationary flyerperson
+                    location = 0; // not used later on
+                    break;
+                case 3: // starship
+                    location = Math.floor(Math.random()*6) + 1;
+                    break;
+            }
+            this.enemies.push([enemy, location]);
+        }
+    }
+
+    draw_enemies(context, program_state, t){
+        console.log(this.enemies);
+        for(let i = 0; i < (this.scene_length / this.spacing); i++)
+        {
+            let z = -1 * i * this.spacing;
+
+            if (this.enemies[i][0] === 1){ // walking flyerperson
+                let flyerperson_motion = 2 * Math.sin(Math.PI * t);
+                // x moves the person along the z axis, and z moves along the x axis (idk why)
+                // +x -> further away, -x -> closer (reverse of the other two z-axis)
+                let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1]);
+                this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(translation));
+            } 
+            else if (this.enemies[i][0] === 2){ // stationary flyerperson
+                let translation = Mat4.translation(0, 0, z - 10);
+                if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                    this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(translation));
+                }
+            }
+            else if (this.enemies[i][0] === 3) // starship
+            { 
+                let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
+                let translation = Mat4.translation(bot_motion, 0, z);
+                if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                    this.draw_starship(context, program_state, this.bot_transform.times(translation));
+                }
+            }
+        }
+    }
 
     display(context, program_state) {
         super.display(context, program_state);
@@ -1424,38 +1485,13 @@ export class BruinRun extends Base_Scene {
             this.moveForward = false;
         }
 
-
-        let bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t),0,0);
-
-                if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
-            this.draw_starship(context, program_state, this.bot_transform);
+        // Spawn enemies
+        // Haven't yet programmed people not hitting tables, but may can adjust spacing? 
+        if (!this.set){
+            this.set_enemies(60, 15);
         }
-
-        //stationary starship for collision testing
-        bot_motion = Mat4.translation(-1*6.5*Math.sin(Math.PI/3 * t),0,-15);
-        if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
-            this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-        }
-        bot_motion = Mat4.translation(6.5*Math.sin(Math.PI/3 * t+this.rand_position),0,-30);
-        if (this.bot_transform.times(bot_motion)[2][3] < this.person_z+10) { 
-            this.draw_starship(context, program_state, this.bot_transform.times(bot_motion));
-        }
-
-    let flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/4.0));
-
-    // be warned, for collision, flyerperson2 requires the input of a key, don'tdo any duplicates 
-    //this.draw_flyerperson2(context, program_state, this.flyerperson_transform.times(Mat4.translation(0, 0, -12)));
-    flyerperson_motion = Mat4.translation(0,0,2*Math.sin(Math.PI * t * this.rand_position/2.5)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
-    this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
-    flyerperson_motion = Mat4.translation(52.5,0,2*Math.sin(Math.PI * t* this.rand_position/2.0));
-    this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
-    flyerperson_motion = Mat4.translation(52.5, 0 ,2*Math.sin(Math.PI * t)).times(Mat4.rotation(270, 0, 0, 1)).times(Mat4.translation(0, 0, -25));
-    this.draw_flyerperson(context, program_state, this.flyerperson_transform.times(flyerperson_motion));
-
-
-
+        this.draw_enemies(context, program_state, t);
        
-
        if(!this.detach_camera){
             //Use the default camera position
             program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20))));     
