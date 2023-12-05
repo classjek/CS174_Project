@@ -93,7 +93,7 @@ class Base_Scene extends Scene {
         this.hover = this.swarm = false;
 
         // Initialize person translation here so position isn't continuously reset 
-        this.person_transform = Mat4.translation(0, 10, 10);
+        this.person_transform = Mat4.translation(-4, 10, 10);
 
         // Initialize walkway so it is one big piece that the character will walk over
         // A little confused here, is this order correct? 
@@ -443,9 +443,10 @@ export class BruinRun extends Base_Scene {
         //console.log(this.person_z);
 
         let move_y = -(this.person_z - 10)/60; 
-        let move_x = person_trans[0][3]/60 
+        let move_x = (person_trans[0][3]+4)/16; 
         let marker_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
-        console.log(move_x);
+        // it is not centered because, for some reason, the player is initialized at not the middle 
+        console.log(person_trans[0][3]);
 
         //draw person 
         //let person_transform = map_transform.times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1)).times(Mat4.translation(0, 0, 0));
