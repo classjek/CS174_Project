@@ -1384,7 +1384,7 @@ export class BruinRun extends Base_Scene {
         }
     }
 
-    draw_enemies(context, program_state, t){
+    draw_enemies(context, program_state, t, enemies_trans = Mat4.identity()){
         //console.log(this.enemies);
         for(let i = 0; i < (this.scene_length / this.spacing); i++)
         {
