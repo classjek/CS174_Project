@@ -924,7 +924,6 @@ export class BruinRun extends Base_Scene {
                     flyerP.turn_prog += 1; 
                     this.flyerperson_info.set(key, flyerP);
                 }
-                    
             } else {
                 person[matrix] = person[matrix].times(model_transform); 
             }
@@ -942,20 +941,22 @@ export class BruinRun extends Base_Scene {
 
        // change this so it is conditional based on if the character is moving or not
        // Walking Animation
-    //    person.arms_transformR = person.arms_transformR
-    //        .times(Mat4.translation(0, 1.75, 0))
-    //        .times(Mat4.rotation(t_reverse_arms, 1, 0, 0))
-    //        .times(Mat4.translation(0, -2, 0));
-    //    person.flyer_transform = person.arms_transformR
-    //        .times(Mat4.translation(0, -3, 0));
-    //    person.legs_transformL = person.legs_transformL
-    //        .times(Mat4.translation(0, 2.25, 0))
-    //        .times(Mat4.rotation(t_reverse, 1, 0, 0))
-    //        .times(Mat4.translation(0, -2.25, 0));         
-    //    person.legs_transformR = person.legs_transformR
-    //        .times(Mat4.translation(0, 2.25, 0))
-    //        .times(Mat4.rotation(t, 1, 0, 0))
-    //        .times(Mat4.translation(0, -2.25, 0));
+       if (this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == false){
+            person.arms_transformR = person.arms_transformR
+                .times(Mat4.translation(0, 1.75, 0))
+                .times(Mat4.rotation( t_reverse_arms, 0, 0, 1))
+                .times(Mat4.translation(0, -2, 0));
+            person.flyer_transform = person.arms_transformR
+                .times(Mat4.translation(0, -3, 0));
+            person.legs_transformL = person.legs_transformL
+                .times(Mat4.translation(0, 2.25, 0))
+                .times(Mat4.rotation(t_reverse, 0, 0, 1))
+                .times(Mat4.translation(0, -2.25, 0));         
+            person.legs_transformR = person.legs_transformR
+                .times(Mat4.translation(0, 2.25, 0))
+                .times(Mat4.rotation(t, 0, 0, 1))
+                .times(Mat4.translation(0, -2.25, 0));
+       }
 
        person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
        //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
