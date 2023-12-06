@@ -149,12 +149,12 @@ class Base_Scene extends Scene {
             if (event.key === 'a'){
                 this.moveLeft = true; 
             }
-            if(event.key === 'w'){
-                this.moveForward = true; 
-            }
-            if(event.key === 's'){
-                this.moveBackward = true; 
-            }
+            // if(event.key === 'w'){
+            //     this.moveForward = true; 
+            // }
+            // if(event.key === 's'){
+            //     this.moveBackward = true; 
+            // }
             if (event.key === 'Escape') {
                 this.detach_camera = true;
             }
@@ -353,11 +353,11 @@ export class BruinRun extends Base_Scene {
                 this.moveRight = true; 
             }
         })
-        this.key_triggered_button("Forward", ["w"], () => {
-            this.moveForward = true; 
-        })
+        // this.key_triggered_button("Forward", ["w"], () => {
+        //     this.moveForward = true; 
+        // })
         this.key_triggered_button("RUN", ["q"], () => {
-            this.running = !this.running; 
+            this.running = true; 
         })
 
         this.key_triggered_button("Unlock Camera", ["Escape"], () =>{
@@ -1470,7 +1470,7 @@ export class BruinRun extends Base_Scene {
 
                 // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-        //this.start_game = true;
+        this.start_game = true;
         if(!this.start_game){
             const initial_camera_position = Mat4.translation(0, 0, -30);
 
@@ -1581,12 +1581,6 @@ export class BruinRun extends Base_Scene {
             this.moveForward = false;
         }
 
-        // Spawn enemies
-        // Haven't yet programmed people not hitting tables, but may can adjust spacing? 
-        // if (!this.set){
-        //     this.set_enemies(60, 15);
-        // }
-        // this.draw_enemies(context, program_state, t);
        
        if(!this.detach_camera){
             //Use the default camera position
