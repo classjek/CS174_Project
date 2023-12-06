@@ -866,7 +866,7 @@ export class BruinRun extends Base_Scene {
             if(!this.flyerperson_info.has(key)){
                 // add flyerperson2 to map
                 //console.log('initialize map');
-                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3]}); 
+                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3], turn_prog: 0}); 
             } else { // if they are initialized -> movement cycle has started 
                 let flyerP = this.flyerperson_info.get(key);
                 //let oldProgress = flyerP.progress;
@@ -907,15 +907,24 @@ export class BruinRun extends Base_Scene {
        for (let matrix in person) { 
             // if turned, keep turned, still figuring out how to turn 
             if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
+                // turn the flyerperson gradually 
+                let flyerP = this.flyerperson_info.get(key);
+                let turn_prog = flyerP.turn_prog;
+                let rotation = (Math.PI/ 100 ) * turn_prog; 
                     person = {
-                        head_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, 0, 0)),
-                        torso_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0,-2.5,0)),
-                        arms_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -3, -1.5)),
-                        arms_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -3, 1.5)),
-                        legs_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6.25, -0.5)),
-                        legs_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6.25, 0.5)),
-                        flyer_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(0, -6, 1.5))
+                        head_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, 0, 0)),
+                        torso_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0,-2.5,0)),
+                        arms_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -3, -1.5)),
+                        arms_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -3, 1.5)),
+                        legs_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -6.25, -0.5)),
+                        legs_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -6.25, 0.5)),
+                        flyer_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -6, 1.5))
                     }
+                if(turn_prog < 50){
+                    flyerP.turn_prog += 1; 
+                    this.flyerperson_info.set(key, flyerP);
+                }
+                    
             } else {
                 person[matrix] = person[matrix].times(model_transform); 
             }
