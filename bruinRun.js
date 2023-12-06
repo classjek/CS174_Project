@@ -437,23 +437,48 @@ export class BruinRun extends Base_Scene {
     }
 
     draw_map(context, program_state, map_transform, person_trans){
-        const bg_map_color = hex_color("#959090");
+        const bg_map_color = hex_color("#e2d8c9");
         const person_marker = hex_color("#ff0000"); 
+        const cone_color = hex_color("#ff0000");
+        const starship_color = hex_color("#fff8e7");
 
-        //console.log(this.person_z);
-
+        //console.log(this.person_z, person_trans[0][3]);
         let move_y = -(this.person_z - 10)/60; 
         let move_x = (person_trans[0][3]+4)/16; 
         let marker_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
-        // it is not centered because, for some reason, the player is initialized at not the middle 
-        console.log(person_trans[0][3]);
+
+        //let star_transform = map_transform.times(Mat4.translation(0, 0, 1)).times(Mat4.scale(0.1, 0.075, 0.2)); 
+        //this.shapes.map.draw(context, program_state, star_transform, this.materials.plastic.override({color: starship_color}));
+        // Draw Starships
+        
+        for (const [key, value] of this.starship_locations.entries()) {
+            //console.log(key, value); // This will log each key and value pair
+            let move_y = -(key - 10)/60; 
+            let move_x = (value+4)/16; 
+            let starship_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
+            //let star_transform = map_transform.times(Mat4.translation(mval + 0.8, mkey, 1)).times(Mat4.scale(0.1, 0.075, 0.2));
+            let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
+            this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
+        }
+        //console.log(mkey, mval);
+        // mkey = mkey/60; 
+        // mval = mval/16; 
+        // let star_transform = map_transform.times(Mat4.translation(mval + 0.8, mkey, 1)).times(Mat4.scale(0.1, 0.075, 0.2));
+        // this.shapes.map.draw(context, program_state, star_transform, this.materials.plastic.override({color: starship_color}));
 
         //draw person 
-        //let person_transform = map_transform.times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1)).times(Mat4.translation(0, 0, 0));
-        let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1)).times(Mat4.translation(0, 0, 0));
+        let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
         this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
+        
+        // draw barrier 
+        let cone_transform = map_transform.times(Mat4.translation(0, 0.9, 1)).times(Mat4.scale(0.075, 0.05, 0.1)); 
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(3, 0, 0)), this.materials.plastic.override({color: cone_color})); 
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(6, 0, 0)), this.materials.plastic.override({color: cone_color}));
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(9, 0, 0)), this.materials.plastic.override({color: cone_color}));
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(12, 0, 0)), this.materials.plastic.override({color: cone_color}));
+        this.shapes.map.draw(context, program_state, cone_transform, this.materials.plastic.override({color: cone_color}));
         // draw base map 
-        map_transform = map_transform.times(Mat4.scale(0.8, 1.2, 0.8));
+        map_transform = map_transform.times(Mat4.scale(0.8, 1, 0.8));
         this.shapes.map.draw(context, program_state, map_transform, this.materials.plastic.override( {color: bg_map_color}));
     }
 
@@ -763,7 +788,6 @@ export class BruinRun extends Base_Scene {
     draw_flyerperson(context, program_state, model_transform){
          // Draws a flyer person at certain locations, just a rough draft version
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
-
         const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
 
         let person = {
