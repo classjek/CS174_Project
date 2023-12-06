@@ -442,16 +442,14 @@ export class BruinRun extends Base_Scene {
         const person_marker = hex_color("#ff0000"); 
         const cone_color = hex_color("#ff0000");
         const starship_color = hex_color("#fff8e7");
+        const flyer_person_color = hex_color("#59d1dc");
 
         //console.log(this.person_z, person_trans[0][3]);
         let move_y = -(this.person_z - 10)/60; 
         let move_x = (person_trans[0][3]+4)/16; 
         let marker_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
 
-        //let star_transform = map_transform.times(Mat4.translation(0, 0, 1)).times(Mat4.scale(0.1, 0.075, 0.2)); 
-        //this.shapes.map.draw(context, program_state, star_transform, this.materials.plastic.override({color: starship_color}));
         // Draw Starships
-        
         for (const [key, value] of this.starship_locations.entries()) {
             let move_y = -(key - 10)/60; 
             let move_x = (value+4)/16; 
@@ -460,6 +458,15 @@ export class BruinRun extends Base_Scene {
             let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
             this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
         }
+        // Draw Flyerpersons
+        for (const [key, value] of this.flyerperson_info.entries()){
+            let move_y = -(key - 10)/60; 
+            let move_x = (value.x_pos + 4)/16; 
+            let flyer_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
+            let flyer_transform = map_transform.times(flyer_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
+            this.shapes.map.draw(context, program_state, flyer_transform, this.materials.plastic.override({color: flyer_person_color}));
+        }
+
 
         //draw person 
         let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
@@ -550,7 +557,6 @@ export class BruinRun extends Base_Scene {
         this.shapes.cone.draw(context, program_state, bot_transform.times(starship.flag), this.materials.plastic.override( {color: flag_color}))
 
         this.shapes.cube.draw(context, program_state, bot_transform.times(starship.square), this.materials.plastic.override( {color: wheel_color}))
-
     }   
 
     draw_walkway(context, program_state, walkway_transform) {
@@ -1409,6 +1415,7 @@ export class BruinRun extends Base_Scene {
 
         // reset the enemy maps here 
         this.starship_locations.clear(); 
+        this.flyerperson_info.clear(); 
 
         this.scene_length = scene_length;
         this.spacing = spacing; 
