@@ -184,6 +184,7 @@ class Base_Scene extends Scene {
             'walkway': new Walk(),
             'trapezoid': new Trapezoid(),
             'cylinder': new defs.Cylindrical_Tube(10,10),
+            'cylinder2': new defs.Rounded_Capped_Cylinder(45,45),
             'triangle': new defs.Triangle(),
             'sphere': new defs.Subdivision_Sphere(4),
             'cone': new defs.Rounded_Closed_Cone(20,20),
@@ -1325,8 +1326,36 @@ export class BruinRun extends Base_Scene {
 
 
         //LAWN
-        let lawn_trans = Mat4.translation(-65,8,-100).times(Mat4.rotation(Math.PI/6,0,1,0)).times(Mat4.rotation(Math.PI/9,1,0,0)).times(Mat4.scale(25,10,45));
-        this.shapes.cube.draw(context, program_state, scene_translation.times(lawn_trans), this.materials.grass_texture)
+        let lawn_trans = Mat4.translation(-55,.5,-65).times(Mat4.scale(30,1,65))
+        this.shapes.cube.draw(context, program_state, scene_translation.times(lawn_trans), this.materials.grass_texture);
+        lawn_trans = Mat4.translation(-70,-12,-80).times(Mat4.scale(35,35,60)).times(Mat4.rotation(Math.PI/2.2,1,1,0));
+        this.shapes.cylinder2.draw(context, program_state, scene_translation.times(lawn_trans), this.materials.grass_texture);
+
+
+        let tree_1 = Mat4.translation(-40,12,-65).times(Mat4.scale(.8,.8,.8));
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        tree_1 = Mat4.translation(-43,15,-63);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+
+        tree_1 = Mat4.translation(-41,13,-50);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        tree_1 = Mat4.translation(-27,10,-48);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        tree_1 = Mat4.translation(-52,18,-52).times(Mat4.scale(1.2,1.2,1.2));
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+
+        tree_1 = Mat4.translation(-43,16,-40);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        tree_1 = Mat4.translation(-45,13,-38);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        tree_1 = Mat4.translation(-52,18,-40).times(Mat4.scale(1.2,1.2,1.2));
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        tree_1 = Mat4.translation(-27,10,-20);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+
+        tree_1 = Mat4.translation(-43,15,-73);
+        this.draw_tree(context, program_state, scene_translation.times(tree_1))
+        
     }
 
     draw_scene(context, program_state, scene_translation = Mat4.identity()) {
@@ -1534,6 +1563,7 @@ export class BruinRun extends Base_Scene {
             this.new_scene = true;
             this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
             this.person_z = this.person_transform[2][3];
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-6));
             this.set = false;
         }
         else if (this.person_z <= -127 && this.person_z > -170) {
@@ -1542,7 +1572,7 @@ export class BruinRun extends Base_Scene {
 
             let move_enemies = Mat4.translation(135,0,0);
             if (!this.set){
-                this.set_enemies(40, 15);
+                this.set_enemies(50, 15);
             }
             this.draw_enemies(context, program_state, t, move_enemies);
 
