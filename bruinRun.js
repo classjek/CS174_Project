@@ -575,7 +575,7 @@ export class BruinRun extends Base_Scene {
         // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
         // Jumping 
-        if (this.isJumping){
+        if (this.isJumping && !this.collision){
             //if the player is not over as starship
             if (!this.on_starship){
                 this.jumpHeight +=1; 
@@ -640,6 +640,7 @@ export class BruinRun extends Base_Scene {
             this.running = false; 
             this.moveForward = false;
             this.moveBackward = false; 
+            this.isJumping = false; 
         }
 
         // Left/Right Movement
