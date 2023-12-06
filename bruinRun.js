@@ -125,6 +125,7 @@ class Base_Scene extends Scene {
 
         // keeps track of starship locations - only x and z matter
         this.starship_locations = new Map();
+        this.flyerperson_location = new Map(); 
 
         //keeps track of flyer persons
         // This map currently has two elements, one to keep track of the flyerperson's x movement and the other to keep track of their rotation
@@ -459,9 +460,9 @@ export class BruinRun extends Base_Scene {
             this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
         }
         // Draw Flyerpersons
-        for (const [key, value] of this.flyerperson_info.entries()){
+        for (const [key, value] of this.flyerperson_location.entries()){
             let move_y = -(key - 10)/60; 
-            let move_x = (value.x_pos + 4)/16; 
+            let move_x = (value + 4)/16; 
             let flyer_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             let flyer_transform = map_transform.times(flyer_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
             this.shapes.map.draw(context, program_state, flyer_transform, this.materials.plastic.override({color: flyer_person_color}));
@@ -854,9 +855,9 @@ export class BruinRun extends Base_Scene {
         // Draws a flyer person at certain locations, just a rough draft version
        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
+
         // set the key to z axis as it is somewhat unique and won't change throughout
             let key = model_transform[2][3];
-            //console.log('key at', key);
         // check if the player is within a certain distance
         if( (this.person_z - model_transform[2][3]) < 10){
             // if not in map and in range
@@ -885,6 +886,9 @@ export class BruinRun extends Base_Scene {
                 this.flyerperson_info.set(key, flyerP); 
             }
         }
+
+        // add to locations map to be displayed on map 
+        this.flyerperson_location.set(key, model_transform[0][3]);
 
        const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
        
@@ -1409,6 +1413,11 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, model_transform, this.materials.start_screen);
     }
 
+
+    // Current issues: 
+    // replace stationary flyer persons with moving ones
+    // add a minimum number of bots per level 
+    // increase the number of enemies per level 
     set_enemies(scene_length, spacing){
         // Use this function ONCE PER SCENE to set random enemy types and locations
         // @spacing : spacing between enemies
@@ -1417,14 +1426,18 @@ export class BruinRun extends Base_Scene {
         this.starship_locations.clear(); 
         this.flyerperson_info.clear(); 
 
+        // all the scenes are basically the smae length so this isn't necessary 
+        // but something is working because they don't seem to collide w the tables 
+
+        // quite confused by this treatment of variables, especially if only called once per scene
         this.scene_length = scene_length;
         this.spacing = spacing; 
         this.enemies.length = 0; // clear previous array
-        this.set = true;
+        this.set = true; // ?? 
 
         for (let i = 0; i < scene_length / spacing; i++) 
         {
-            let enemy = Math.floor(Math.random() * 3) + 1;
+            let enemy = Math.floor(Math.random() * 3) + 1; // generate number between 1 and 3
             let location;
 
             switch (enemy) {
@@ -1434,7 +1447,8 @@ export class BruinRun extends Base_Scene {
                 case 2: // stationary flyerperson
                     location = 0; // not used later on
                     break;
-                case 3: // starship
+                // set case 3 as the default case 
+                case 3: // starship 
                     location = Math.floor(Math.random()*6) + 1;
                     break;
             }
