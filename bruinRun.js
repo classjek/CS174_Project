@@ -1480,9 +1480,9 @@ export class BruinRun extends Base_Scene {
                 let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1]);
                 this.draw_flyerperson(context, program_state, enemies_trans.times(this.flyerperson_transform).times(translation));
             } 
-            else if (this.enemies[i][0] === 2){ // stationary flyerperson
+            if (this.enemies[i][0] === 2){ // stationary flyerperson
                 let translation = Mat4.translation(0, 0, z - 10);
-                if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                if (enemies_trans.times(this.flyerperson_transform).times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
                     this.draw_flyerperson2(context, program_state, enemies_trans.times(this.flyerperson_transform).times(translation));
                 }
             }
@@ -1490,7 +1490,7 @@ export class BruinRun extends Base_Scene {
             { 
                 let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
                 let translation = Mat4.translation(bot_motion, 0, z);
-                if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                if (enemies_trans.times(this.bot_transform).times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
                     this.draw_starship(context, program_state, enemies_trans.times(this.bot_transform).times(translation));
                 }
             }
@@ -1574,7 +1574,7 @@ export class BruinRun extends Base_Scene {
             let move_enemies = Mat4.translation(65,0,0);
 
             if (!this.set){
-                this.set_enemies(60, 15);
+                this.set_enemies(60, 5);
             }
             this.draw_enemies(context, program_state, t, move_enemies);
 
@@ -1601,7 +1601,7 @@ export class BruinRun extends Base_Scene {
 
             let move_enemies = Mat4.translation(135,0,0);
             if (!this.set){
-                this.set_enemies(50, 15);
+                this.set_enemies(50, 5);
             }
             this.draw_enemies(context, program_state, t, move_enemies);
 
