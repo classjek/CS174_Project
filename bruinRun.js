@@ -452,7 +452,6 @@ export class BruinRun extends Base_Scene {
         // Draw Starships
         
         for (const [key, value] of this.starship_locations.entries()) {
-            //console.log(key, value); // This will log each key and value pair
             let move_y = -(key - 10)/60; 
             let move_x = (value+4)/16; 
             let starship_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
@@ -460,11 +459,6 @@ export class BruinRun extends Base_Scene {
             let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
             this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
         }
-        //console.log(mkey, mval);
-        // mkey = mkey/60; 
-        // mval = mval/16; 
-        // let star_transform = map_transform.times(Mat4.translation(mval + 0.8, mkey, 1)).times(Mat4.scale(0.1, 0.075, 0.2));
-        // this.shapes.map.draw(context, program_state, star_transform, this.materials.plastic.override({color: starship_color}));
 
         //draw person 
         let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
@@ -1383,6 +1377,9 @@ export class BruinRun extends Base_Scene {
     set_enemies(scene_length, spacing){
         // Use this function ONCE PER SCENE to set random enemy types and locations
         // @spacing : spacing between enemies
+
+        // reset the enemy maps here 
+        this.starship_locations.clear(); 
 
         this.scene_length = scene_length;
         this.spacing = spacing; 
