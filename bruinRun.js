@@ -963,7 +963,7 @@ export class BruinRun extends Base_Scene {
        person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
        person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
-       person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.1, 1, 0.75));
+       person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.75, 1, 0.1));
        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
