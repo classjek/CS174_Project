@@ -1581,7 +1581,7 @@ export class BruinRun extends Base_Scene {
                 if (!this.set){
                     this.set_enemies(60, 15);
                 }
-                this.draw_enemies(context, program_state, t, 65);
+                this.draw_enemies(context, program_state, t, 75);
 
                 this.draw_scene_kerck(context, program_state, move_scene);
 
