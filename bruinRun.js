@@ -141,7 +141,7 @@ class Base_Scene extends Scene {
 
         // for randomization of flyers
         this.rando = Math.floor(Math.random() * 5) + 1;
-
+        
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -214,6 +214,11 @@ class Base_Scene extends Scene {
                     color: hex_color("#000000"),
                     ambient: 1, diffusivity: 0.1, specularity: 0.1,
                     texture: new Texture("assets/Bruinwalk Start.png", "NEAREST")}),
+            win_screen: new Material(new defs.Textured_Phong(),
+                {
+                    color: hex_color("#000000"),
+                    ambient: 1, diffusivity: 0.1, specularity: 0.1,
+                    texture: new Texture("assets/WinScreen1.jpg", "NEAREST")}),
             ack_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/ackerman.jpg", "NEAREST")}),
@@ -1423,6 +1428,11 @@ export class BruinRun extends Base_Scene {
         model_transform = model_transform.times(Mat4.scale(10, 10, 0.5))
         this.shapes.cube.draw(context, program_state, model_transform, this.materials.start_screen);
     }
+    draw_win_screen(context, program_state, model_transform = Mat4.identity()){
+        model_transform = model_transform.times(Mat4.translation(0, -40, 0))
+                                        .times(Mat4.scale(10, 10, 0.5));
+        this.shapes.cube.draw(context, program_state, model_transform, this.materials.win_screen);
+    }
 
 
     // Current issues: 
@@ -1525,9 +1535,9 @@ export class BruinRun extends Base_Scene {
             const light_position = vec4(5, 30, 20, 1);
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
             // Player
-            this.draw_start_screen(context, program_state, Mat4.identity())
+            this.draw_start_screen(context, program_state, Mat4.identity());
         }
-        else
+        else if(this.start_game)
         {
             // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
             const initial_camera_position = Mat4.translation(5, -10, -30);
@@ -1600,7 +1610,7 @@ export class BruinRun extends Base_Scene {
                 this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-6));
                 this.set = false;
             }
-            else if (this.person_z <= -127 && this.person_z > -170) {
+            else if (this.person_z <= -127 && this.person_z > -200) {
                 this.new_scene = false;
                 let move_scene = Mat4.translation(0,0,-135);
 
@@ -1612,10 +1622,19 @@ export class BruinRun extends Base_Scene {
 
                 this.draw_scene_janss(context, program_state, move_scene);
             }
-            else {
+            else{
                 //END GAME
                 this.running = false;
                 this.moveForward = false;
+
+                this.detach_camera = true;
+
+                const final_camera_position = Mat4.translation(0, 40, -30);
+                                            
+                program_state.set_camera(final_camera_position);
+
+                this.draw_win_screen(context, program_state, Mat4.identity());
+
             }
 
        
