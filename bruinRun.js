@@ -368,7 +368,7 @@ export class BruinRun extends Base_Scene {
             this.detach_camera = false;
         })
         this.key_triggered_button("Start Game", ["Enter"], () =>{
-            this.start_game = true;
+            this.start_game = true; 
         })
         this.key_triggered_button("Restart", ["z"], () =>{
             this.reset();
@@ -1440,11 +1440,11 @@ export class BruinRun extends Base_Scene {
         // all the scenes are basically the smae length so this isn't necessary 
         // but something is working because they don't seem to collide w the tables 
 
-        // quite confused by this treatment of variables, especially if only called once per scene
+        // Variables used by function draw_enemies(), initialized here
         this.scene_length = scene_length;
         this.spacing = spacing; 
         this.enemies.length = 0; // clear previous array
-        this.set = true; // ?? 
+        this.set = true; // enemies have been set for the scene
 
         for (let i = 0; i < scene_length / spacing; i++) 
         {
@@ -1467,8 +1467,10 @@ export class BruinRun extends Base_Scene {
         }
     }
 
-    draw_enemies(context, program_state, t, enemies_trans = Mat4.identity()){
-        //console.log(this.enemies);
+    draw_enemies(context, program_state, t, enemies_trans = 0){
+        // @enemies_trans = distance you want to transform ALL enemies
+        // (not a translation matrix because 1-> x to move; 2/3 -> z to move forward)
+
         for(let i = 0; i < (this.scene_length / this.spacing); i++)
         {
             let z = -1 * i * this.spacing;
@@ -1477,34 +1479,58 @@ export class BruinRun extends Base_Scene {
                 let flyerperson_motion = 2 * Math.sin(Math.PI * t);
                 // x moves the person along the z axis, and z moves along the x axis (idk why)
                 // +x -> further away, -x -> closer (reverse of the other two z-axis)
-                let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1]);
-                this.draw_flyerperson(context, program_state, enemies_trans.times(this.flyerperson_transform).times(translation));
+                let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1])
+                    .times(Mat4.translation(enemies_trans, 0, 0))
+                    .times(this.flyerperson_transform);
+                this.draw_flyerperson(context, program_state, translation);
             } 
             else if (this.enemies[i][0] === 2){ // stationary flyerperson
-                let translation = Mat4.translation(0, 0, z - 10);
+                let translation = Mat4.translation(0, 0, z - 10).times(Mat4.translation(0, 0, -1 * enemies_trans));
                 if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
-                    this.draw_flyerperson2(context, program_state, enemies_trans.times(this.flyerperson_transform).times(translation));
+                    translation = translation.times(this.flyerperson_transform);
+                    this.draw_flyerperson2(context, program_state, translation);
                 }
             }
             else if (this.enemies[i][0] === 3) // starship
             { 
                 let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
-                let translation = Mat4.translation(bot_motion, 0, z);
+                let translation = Mat4.translation(bot_motion, 0, z).times(Mat4.translation(0, 0, -1 * enemies_trans));
                 if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
-                    this.draw_starship(context, program_state, enemies_trans.times(this.bot_transform).times(translation));
+                    translation = translation.times(this.bot_transform);
+                    this.draw_starship(context, program_state, translation);
                 }
             }
         }
     }
 
-    display(context, program_state) {
+    display(context, program_state) 
+    {
         super.display(context, program_state);
-
-                // display():  Called once per frame of animation. Here, the base class's display only does
+        // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
         this.start_game = true;
-        if(!this.start_game){
+        if(!this.start_game)
+        {
             const initial_camera_position = Mat4.translation(0, 0, -30);
+
+            if (!context.scratchpad.controls) {
+                this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
+                // Define the global camera and projection matrices, which are stored in program_state.
+                program_state.set_camera(initial_camera_position);
+            }
+
+            program_state.projection_transform = Mat4.perspective(Math.PI / 4, context.width / context.height, 1, 100);
+
+            // *** Lights: *** Values of vector or point lights.
+            const light_position = vec4(5, 30, 20, 1);
+            program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+            // Player
+            this.draw_start_screen(context, program_state, Mat4.identity())
+        }
+        else
+        {
+            // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
+            const initial_camera_position = Mat4.translation(5, -10, -30);
 
             if (!context.scratchpad.controls) {
                 this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
@@ -1518,100 +1544,79 @@ export class BruinRun extends Base_Scene {
             // *** Lights: *** Values of vector or point lights.
             const light_position = vec4(5, 30, 20, 1);
             program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-            // Player
-            this.draw_start_screen(context, program_state, Mat4.identity())
-        }
-        else {
-        // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-        const initial_camera_position = Mat4.translation(5, -10, -30);
+            let t = program_state.animation_time / 1000;
 
-        if (!context.scratchpad.controls) {
-            this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
-            // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(initial_camera_position);
-        }
+            let walkway_transform = Mat4.translation(0,0,-10);
+            this.draw_person(context, program_state, this.person_transform);
+            this.draw_walkway(context, program_state, walkway_transform);
 
-        program_state.projection_transform = Mat4.perspective(
-            Math.PI / 4, context.width / context.height, 1, 100);
+            if (this.person_z > -60) { // First Scene
+                let move_scene = Mat4.translation(0,0,0);  
+                
+                if (!this.set){
+                    this.set_enemies(60, 15);
+                }
+                this.draw_enemies(context, program_state, t);
+                this.draw_scene_ack(context, program_state, move_scene);
 
-        // *** Lights: *** Values of vector or point lights.
-        const light_position = vec4(5, 30, 20, 1);
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-        let t = program_state.animation_time / 1000;
-
-        let walkway_transform = Mat4.translation(0,0,-10);
-        this.draw_person(context, program_state, this.person_transform);
-        this.draw_walkway(context, program_state, walkway_transform);
-
-
-        if (this.person_z > -60) {
-            let move_scene = Mat4.translation(0,0,0);  
-            
-            if (!this.set){
-                this.set_enemies(60, 15);
-            }
-            this.draw_enemies(context, program_state, t);
-    
-            this.draw_scene_ack(context, program_state, move_scene);
-
-            //add barricade
-            let poster_trans = Mat4.translation(6,3.8,-65).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
-            this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
-            for (let i = 1; i < 5; i++) {
-                poster_trans = poster_trans.times(Mat4.translation(-2.4,0,0));
+                //add barricade
+                let poster_trans = Mat4.translation(6,3.8,-65).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
                 this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
+                for (let i = 1; i < 5; i++) {
+                    poster_trans = poster_trans.times(Mat4.translation(-2.4,0,0));
+                    this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
+                }
             }
-        }
-        else if (this.person_z < -60 && this.person_z > -62) {
-            this.new_scene = true;
-            this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
-            this.person_z = this.person_transform[2][3];
-            this.set = false;
-        }
-        else if ( this.person_z <= -63 && this.person_z > -125) {
-            this.new_scene = false;
-            let move_scene = Mat4.translation(0,0,-65);
-            let move_enemies = Mat4.translation(65,0,0);
-
-            if (!this.set){
-                this.set_enemies(60, 15);
+            else if (this.person_z < -60 && this.person_z > -62) { // Between Scenes 
+                this.new_scene = true;
+                this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
+                this.person_z = this.person_transform[2][3];
+                this.set = false;
             }
-            this.draw_enemies(context, program_state, t, move_enemies);
+            else if ( this.person_z <= -63 && this.person_z > -125) { // Second Scene
+                this.new_scene = false;
+                let move_scene = Mat4.translation(0,0,-65);
+                // let move_enemies = Mat4.translation(65,0,0);
 
-            this.draw_scene_kerck(context, program_state, move_scene);
+                if (!this.set){
+                    this.set_enemies(60, 15);
+                }
+                this.draw_enemies(context, program_state, t, 65);
 
-                        //add barricade
-            let poster_trans = Mat4.translation(6,3.8,-140).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
-            this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
-            for (let i = 1; i < 5; i++) {
-                poster_trans = poster_trans.times(Mat4.translation(-2.4,0,0));
+                this.draw_scene_kerck(context, program_state, move_scene);
+
+                            //add barricade
+                let poster_trans = Mat4.translation(6,3.8,-140).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
                 this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
+                for (let i = 1; i < 5; i++) {
+                    poster_trans = poster_trans.times(Mat4.translation(-2.4,0,0));
+                    this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
+                }
             }
-        }
-        else if (this.person_z < -125 && this.person_z > -126) {
-            this.new_scene = true;
-            this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
-            this.person_z = this.person_transform[2][3];
-            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-6));
-            this.set = false;
-        }
-        else if (this.person_z <= -127 && this.person_z > -170) {
-            this.new_scene = false;
-            let move_scene = Mat4.translation(0,0,-135);
-
-            let move_enemies = Mat4.translation(135,0,0);
-            if (!this.set){
-                this.set_enemies(50, 15);
+            else if (this.person_z < -125 && this.person_z > -126) {
+                this.new_scene = true;
+                this.person_transform = this.person_transform.times(Mat4.translation(0,0,-3))
+                this.person_z = this.person_transform[2][3];
+                this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-6));
+                this.set = false;
             }
-            this.draw_enemies(context, program_state, t, move_enemies);
+            else if (this.person_z <= -127 && this.person_z > -170) {
+                this.new_scene = false;
+                let move_scene = Mat4.translation(0,0,-135);
 
-            this.draw_scene_janss(context, program_state, move_scene);
-        }
-        else {
-            //END GAME
-            this.running = false;
-            this.moveForward = false;
-        }
+                // let move_enemies = Mat4.translation(135,0,0);
+                if (!this.set){
+                    this.set_enemies(50, 15);
+                }
+                this.draw_enemies(context, program_state, t, 135);
+
+                this.draw_scene_janss(context, program_state, move_scene);
+            }
+            else {
+                //END GAME
+                this.running = false;
+                this.moveForward = false;
+            }
 
        
        if(!this.detach_camera){
@@ -1622,22 +1627,22 @@ export class BruinRun extends Base_Scene {
             this.draw_map(context, program_state, this.person_transform.times(Mat4.translation(-4, -2, 12)), this.person_transform);
        }
 
-       // if there is collision, present flyer to camera 
-       // maybe place this inside the previous if statement
-       if(this.collision){
-            // if collision, render flyer. Have a delay if the player ran into a starship 
-            if(this.star_collision){
-                if(this.starflyer_delay < 50){
-                    this.draw_flyerperson3(context, program_state, this.person_transform);
-                    this.starflyer_delay += 1; 
-                } else {
-                    this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
-                    this.draw_flyerperson3(context, program_state, this.person_transform);
-                }
-            } else {
-                this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
+            // if there is collision, present flyer to camera 
+            // maybe place this inside the previous if statement
+            if(this.collision){
+                    // if collision, render flyer. Have a delay if the player ran into a starship 
+                    if(this.star_collision){
+                        if(this.starflyer_delay < 50){
+                            this.draw_flyerperson3(context, program_state, this.person_transform);
+                            this.starflyer_delay += 1; 
+                        } else {
+                            this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
+                            this.draw_flyerperson3(context, program_state, this.person_transform);
+                        }
+                    } else {
+                        this.draw_flyer(context, program_state, this.person_transform.times(Mat4.translation(0, 0, 1)));
+                    }
             }
-       }
+        }
     }
-}
 }
