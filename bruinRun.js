@@ -779,7 +779,7 @@ export class BruinRun extends Base_Scene {
             this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(yellow));
             this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(yellow));
         } else {
-            this.shapes.cube.draw(context, program_state, person.head_transform,  this.materials.start_screen);
+            this.shapes.cube.draw(context, program_state, person.head_transform,  this.materials.plastic.override(red));
             this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(red));
             this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(red));
             this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(red));
