@@ -446,7 +446,7 @@ export class BruinRun extends Base_Scene {
         const flyer_person_color = hex_color("#59d1dc");
 
         //console.log(this.person_z, person_trans[0][3]);
-        let move_y = -(this.person_z - 10)/60; 
+        let move_y = -((this.person_z - 10)/60)%1.17; 
         let move_x = (person_trans[0][3]+4)/16; 
         let marker_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
 
