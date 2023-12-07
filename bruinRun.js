@@ -854,11 +854,10 @@ export class BruinRun extends Base_Scene {
 
     draw_flyerperson2(context, program_state, model_transform){
         // Draws a flyer person at certain locations, just a rough draft version
-       // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
-
+        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
 
         // set the key to z axis as it is somewhat unique and won't change throughout
-            let key = model_transform[2][3];
+        let key = model_transform[2][3];
         // check if the player is within a certain distance
         if( (this.person_z - model_transform[2][3]) < 10){
             // if not in map and in range
@@ -970,7 +969,8 @@ export class BruinRun extends Base_Scene {
        //this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
        // if turned, add texture to face, eventually change this texture to something funny
        if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
+            // this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic);
        } else {
             this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
        }
@@ -1619,13 +1619,13 @@ export class BruinRun extends Base_Scene {
             }
 
        
-       if(!this.detach_camera){
-            //Use the default camera position
-            program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)))); 
-            
-            // draw map 
-            this.draw_map(context, program_state, this.person_transform.times(Mat4.translation(-4, -2, 12)), this.person_transform);
-       }
+            if(!this.detach_camera){
+                    //Use the default camera position
+                    program_state.set_camera(Mat4.inverse(this.person_transform.times(Mat4.translation(0, 0, 20)))); 
+                    
+                    // draw map 
+                    this.draw_map(context, program_state, this.person_transform.times(Mat4.translation(-4, -2, 12)), this.person_transform);
+            }
 
             // if there is collision, present flyer to camera 
             // maybe place this inside the previous if statement
