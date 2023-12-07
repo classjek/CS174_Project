@@ -141,7 +141,7 @@ class Base_Scene extends Scene {
 
         // for randomization of flyers
         this.rando = Math.floor(Math.random() * 5) + 1;
-        
+
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
             if (event.key === 'd'){
@@ -228,6 +228,23 @@ class Base_Scene extends Scene {
             gene: new Material(new defs.Textured_Phong(), 
                 {   ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/text.png", "NEAREST")}),
+            character_torso: new Material(new defs.Textured_Phong(), 
+                {   ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/UCLA.png", "NEAREST")}),
+            character_arms: new Material(new defs.Textured_Phong(), 
+                {   ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Character Arms.png", "NEAREST")}),
+            character_legs: new Material(new defs.Textured_Phong(), 
+                {   ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Character Legs.png", "NEAREST")}),
+
+
+            flyer_head: new Material(new defs.Textured_Phong(), 
+                {   ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Gene.png", "NEAREST")}),
+            flyer_torso: new Material(new defs.Textured_Phong(), 
+                {   ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/side eye dog.png", "NEAREST")}),
 
             flyer1: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, specularity: 0.1,
@@ -777,12 +794,12 @@ export class BruinRun extends Base_Scene {
 
 
         if(!collision){
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(yellow));
-            this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(blue));
-            this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(yellow));
-            this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(yellow));
-            this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(yellow));
-            this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(yellow));
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.character_arms);
+            this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.character_torso);
+            this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.character_arms);
+            this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.character_arms);
+            this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.character_legs);
+            this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.character_legs);
         } else {
             this.shapes.cube.draw(context, program_state, person.head_transform,  this.materials.plastic.override(red));
             this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(red));
@@ -975,13 +992,13 @@ export class BruinRun extends Base_Scene {
        // if turned, add texture to face, eventually change this texture to something funny
        if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
             // this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic);
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
        } else {
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
        }
 
        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
+        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.flyer_torso);
         this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.flyer_transform, this.materials.plastic.override(green));
         this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
@@ -1061,9 +1078,9 @@ export class BruinRun extends Base_Scene {
        person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
        person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
 
-        this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.plastic.override(white));
-       //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
-        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.plastic.override(black));
+        this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.flyer_head);
+        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.flyer_torso);
         this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
         this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(white));
