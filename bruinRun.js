@@ -1039,7 +1039,7 @@ export class BruinRun extends Base_Scene {
                 .times(Mat4.translation(0, -2.25, 0));
        }
 
-       person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
+       person.head_transform = person.head_transform.times(Mat4.scale(1,1,1)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
        //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
        person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
@@ -1171,7 +1171,7 @@ export class BruinRun extends Base_Scene {
                 .times(Mat4.translation(0, -2.25, 0));
        }
 
-       person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
+       person.head_transform = person.head_transform.times(Mat4.scale(1,1,1)).times(Mat4.rotation(Math.PI/2, 0, 1, 0));
        //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
        person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
        person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
