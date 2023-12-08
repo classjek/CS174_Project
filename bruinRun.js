@@ -718,10 +718,9 @@ export class BruinRun extends Base_Scene {
         if(this.running){
             this.runDist +=1; 
             // translate sky and person
-            // try new speed -0.2 -> -0.4
-            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.3));
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
             this.person_z = this.person_transform[2][3];
-            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-0.3));
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-0.2));
         }
 
         // Walking Animation Parameters
@@ -906,11 +905,10 @@ export class BruinRun extends Base_Scene {
             if(!this.flyerperson_info.has(key)){
                 // add flyerperson2 to map
                 //console.log('initialize map');
-                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3], turn_prog: 0}); 
+                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3], turn_prog: 0, walk_lim: 20 + Math.round(Math.random() * 30)}); 
             } else { // if they are initialized -> movement cycle has started 
                 let flyerP = this.flyerperson_info.get(key);
-                //let oldProgress = flyerP.progress;
-                if ( flyerP.turned == false && flyerP.progress < 20){
+                if ( flyerP.turned == false && flyerP.progress < flyerP.walk_lim){
                     // translate that guy
                     model_transform = model_transform.times(Mat4.translation(-0.2 * flyerP.progress, 0, 0));
                     flyerP.progress += 1; 
@@ -1038,11 +1036,11 @@ export class BruinRun extends Base_Scene {
             if(!this.flyerperson_info.has(key)){
                 // add flyerperson2 to map
                 //console.log('initialize map');
-                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3], turn_prog: 0}); 
+                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3], turn_prog: 0, walk_lim: 20 + Math.round(Math.random() * 30)}); 
             } else { // if they are initialized -> movement cycle has started 
                 let flyerP = this.flyerperson_info.get(key);
                 //let oldProgress = flyerP.progress;
-                if ( flyerP.turned == false && flyerP.progress < 20){
+                if ( flyerP.turned == false && flyerP.progress < flyerP.walk_lim){
                     // translate that guy
                     model_transform = model_transform.times(Mat4.translation(0.2 * flyerP.progress, 0, 0));
                     flyerP.progress += 1; 
