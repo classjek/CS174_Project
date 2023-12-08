@@ -1017,6 +1017,138 @@ export class BruinRun extends Base_Scene {
         this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
     }
 
+    draw_flyerperson2_left(context, program_state, model_transform){
+        // Draws a flyer person at certain locations, just a rough draft version
+        // @model_transform: transformation matrix applied to ALL parts (i.e. if you want to move everything)
+
+        // set the key to z axis as it is somewhat unique and won't change throughout
+        let key = model_transform[2][3];
+        // check if the player is within a certain distance
+        if( (this.person_z - model_transform[2][3]) < 10){
+            // if not in map and in range
+            // if (!target.has(key))
+            if(!this.flyerperson_info.has(key)){
+                // add flyerperson2 to map
+                //console.log('initialize map');
+                this.flyerperson_info.set(key, {progress: 0, turned: false, x_pos: model_transform[0][3], turn_prog: 0}); 
+            } else { // if they are initialized -> movement cycle has started 
+                let flyerP = this.flyerperson_info.get(key);
+                //let oldProgress = flyerP.progress;
+                if ( flyerP.turned == false && flyerP.progress < 20){
+                    // translate that guy
+                    model_transform = model_transform.times(Mat4.translation(0.2 * flyerP.progress, 0, 0));
+                    flyerP.progress += 1; 
+                    // update stored x component
+                    flyerP.x_pos = model_transform[0][3];
+                } else {
+                    if (flyerP.turned == false){
+                        model_transform = model_transform.times(Mat4.translation(0.2 * flyerP.progress, 0, 0)); 
+                        flyerP.turned = true; 
+                    }
+                    model_transform = model_transform.times(Mat4.translation(0.2 * flyerP.progress, 0, 0)); 
+                }
+                // update map with new information
+                this.flyerperson_info.set(key, flyerP); 
+            }
+        }
+
+        // add to locations map to be displayed on map 
+        this.flyerperson_location.set(key, model_transform[0][3]);
+
+       const black = hex_color("#000000"), white = hex_color("#FFFFFF"), green = hex_color("#98FB98");
+       
+       let person = {
+           head_transform: Mat4.identity().times(Mat4.translation(0, 0, 0)),
+           torso_transform: Mat4.identity().times(Mat4.translation(0,-2.5,0)),
+           arms_transformL: Mat4.identity().times(Mat4.translation(0, -3, -1.5)),
+           arms_transformR: Mat4.identity().times(Mat4.translation(0, -3, 1.5)),
+           legs_transformL: Mat4.identity().times(Mat4.translation(0, -6.25, -0.5)),
+           legs_transformR: Mat4.identity().times(Mat4.translation(0, -6.25, 0.5)),
+           flyer_transform: Mat4.identity().times(Mat4.translation(0, -6, 1.5))
+       }
+
+       // Use custom transform_matrix to modify entire person at once
+       for (let matrix in person) { 
+            // if turned, keep turned, still figuring out how to turn 
+            if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
+                // turn the flyerperson gradually 
+                let flyerP = this.flyerperson_info.get(key);
+                let turn_prog = flyerP.turn_prog;
+                let rotation = -(Math.PI/ 100) * turn_prog; 
+                    person = {
+                        head_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, 0, 0)),
+                        torso_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0,-2.5,0)),
+                        arms_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -3, -1.5)),
+                        arms_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -3, 1.5)),
+                        legs_transformL: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -6.25, -0.5)),
+                        legs_transformR: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -6.25, 0.5)),
+                        flyer_transform: Mat4.identity().times(model_transform).times(Mat4.rotation(rotation, 0, 1, 0)).times(Mat4.translation(0, -6, 1.5))
+                    }
+                if(turn_prog < 50){
+                    flyerP.turn_prog += 1; 
+                    this.flyerperson_info.set(key, flyerP);
+                }
+            } else {
+                person[matrix] = person[matrix].times(model_transform); 
+            }
+       }
+
+       // Walking Animation Parameters
+       const x = program_state.animation_time / 1000;
+       let max_angle = Math.PI / 5;
+       let max_angle_arms = Math.PI/3;
+       let swing_seconds = 2;
+       let t = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x);
+       let t_arms = max_angle_arms * Math.sin((2 * Math.PI / swing_seconds) * x);
+       let t_reverse = max_angle * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
+       let t_reverse_arms = max_angle_arms * Math.sin((2 * Math.PI / swing_seconds) * x + Math.PI);
+
+       // change this so it is conditional based on if the character is moving or not
+       // Walking Animation
+       if (this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == false){
+            person.arms_transformR = person.arms_transformR
+                .times(Mat4.translation(0, 1.75, 0))
+                .times(Mat4.rotation( t_reverse_arms, 0, 0, 1))
+                .times(Mat4.translation(0, -2, 0));
+            person.flyer_transform = person.arms_transformR
+                .times(Mat4.translation(0, -3, 0));
+            person.legs_transformL = person.legs_transformL
+                .times(Mat4.translation(0, 2.25, 0))
+                .times(Mat4.rotation(t_reverse, 0, 0, 1))
+                .times(Mat4.translation(0, -2.25, 0));         
+            person.legs_transformR = person.legs_transformR
+                .times(Mat4.translation(0, 2.25, 0))
+                .times(Mat4.rotation(t, 0, 0, 1))
+                .times(Mat4.translation(0, -2.25, 0));
+       }
+
+       person.head_transform = person.head_transform.times(Mat4.scale(1,1,1));
+       //person.torso_transform =  person.torso_transform.times(Mat4.scale(1, 1.5, .5));
+       person.torso_transform =  person.torso_transform.times(Mat4.scale(0.5, 1.5, 1));
+       person.arms_transformL = person.arms_transformL.times(Mat4.scale(.5, 2, .5));
+       person.arms_transformR = person.arms_transformR.times(Mat4.scale(.5, 2, .5));
+       person.flyer_transform = person.flyer_transform.times(Mat4.scale(0.75, 1, 0.1));
+       person.legs_transformL = person.legs_transformL.times(Mat4.scale(.5, 2.25, .5));
+       person.legs_transformR = person.legs_transformR.times(Mat4.scale(.5, 2.25, .5));
+
+       //this.shapes.sphere.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+       // if turned, add texture to face, eventually change this texture to something funny
+       if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
+            // this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+       } else {
+            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+       }
+
+       //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.torso_transform, this.materials.flyer_torso);
+        this.shapes.cube.draw(context, program_state, person.arms_transformR, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.flyer_transform, this.materials.plastic.override(green));
+        this.shapes.cube.draw(context, program_state, person.arms_transformL, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.legs_transformR, this.materials.plastic.override(white));
+        this.shapes.cube.draw(context, program_state, person.legs_transformL, this.materials.plastic.override(white));
+    }
+
     // flyer person who appears after the player runs into a starship
     // pass in the player's transform so the flyerperson can move to it 
     draw_flyerperson3(context, program_state, person_transform){
@@ -1495,6 +1627,7 @@ export class BruinRun extends Base_Scene {
                     break;
                 case 2: // stationary flyerperson
                     location = 0; // not used later on
+                    console.log('flyerperson2 yo');
                     break;
                 // set case 3 as the default case 
                 case 3: // starship 
@@ -1598,6 +1731,9 @@ export class BruinRun extends Base_Scene {
                 this.draw_enemies(context, program_state, t);
                 this.draw_scene_ack(context, program_state, move_scene);
 
+                // testing out new flyerperson
+                this.draw_flyerperson2_left(context, program_state, Mat4.identity().times(Mat4.translation(-10, 10, -10)));
+
                 //add barricade
                 let poster_trans = Mat4.translation(6,3.8,-65).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
                 this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
@@ -1622,6 +1758,7 @@ export class BruinRun extends Base_Scene {
                     this.set_enemies(60, 15);
                 }
                 this.draw_enemies(context, program_state, t, 75);
+
 
                 this.draw_scene_kerck(context, program_state, move_scene);
 
