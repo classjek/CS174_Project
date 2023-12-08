@@ -119,6 +119,7 @@ class Base_Scene extends Scene {
         this.running = false; 
         this.runDist = 0; 
         this.new_scene = false;
+        this.scene = 0; 
         
         // for landing on starships
         this.on_starship = false; 
@@ -461,6 +462,16 @@ export class BruinRun extends Base_Scene {
     }
 
     draw_map(context, program_state, map_transform, person_trans){
+
+        // increment so everything is portrayed on the map for different scenes
+        let scene_inc = 0; 
+        if (this.scene == 2){
+            scene_inc = 63; 
+        } 
+        if (this.scene == 3){
+            scene_inc = 127; 
+        }
+
         const bg_map_color = hex_color("#e2d8c9");
         const person_marker = hex_color("#ff0000"); 
         const cone_color = hex_color("#ff0000");
@@ -468,13 +479,13 @@ export class BruinRun extends Base_Scene {
         const flyer_person_color = hex_color("#59d1dc");
 
         //console.log(this.person_z, person_trans[0][3]);
-        let move_y = -((this.person_z - 10)/60)%1.17; 
+        let move_y = -(((this.person_z + scene_inc) - 10)/60);  
         let move_x = (person_trans[0][3]+4)/16; 
         let marker_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
 
         // Draw Starships
         for (const [key, value] of this.starship_locations.entries()) {
-            let move_y = -(key - 10)/60; 
+            let move_y = -((key + scene_inc) - 10)/60; 
             let move_x = (value+4)/16; 
             let starship_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             //let star_transform = map_transform.times(Mat4.translation(mval + 0.8, mkey, 1)).times(Mat4.scale(0.1, 0.075, 0.2));
@@ -483,7 +494,7 @@ export class BruinRun extends Base_Scene {
         }
         // Draw Flyerpersons
         for (const [key, value] of this.flyerperson_location.entries()){
-            let move_y = -(key - 10)/60; 
+            let move_y = -((key + scene_inc) - 10)/60; 
             let move_x = (value + 4)/16; 
             let flyer_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             let flyer_transform = map_transform.times(flyer_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
@@ -1579,6 +1590,7 @@ export class BruinRun extends Base_Scene {
 
             if (this.person_z > -60) { // First Scene
                 let move_scene = Mat4.translation(0,0,0);  
+                this.scene = 1; 
                 
                 if (!this.set){
                     this.set_enemies(60, 15);
@@ -1602,6 +1614,7 @@ export class BruinRun extends Base_Scene {
             }
             else if ( this.person_z <= -63 && this.person_z > -125) { // Second Scene
                 this.new_scene = false;
+                this.scene = 2; 
                 let move_scene = Mat4.translation(0,0,-65);
                 // let move_enemies = Mat4.translation(65,0,0);
 
@@ -1627,9 +1640,10 @@ export class BruinRun extends Base_Scene {
                 this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-6));
                 this.set = false;
             }
-            else if (this.person_z <= -127 && this.person_z > -200) {
+            else if (this.person_z <= -127 && this.person_z > -200) { // 3rd scene 
                 this.new_scene = false;
                 let move_scene = Mat4.translation(0,0,-135);
+                this.scene = 3; 
 
                 // let move_enemies = Mat4.translation(135,0,0);
                 if (!this.set){
