@@ -11,8 +11,6 @@ Note about texture: I found it only really works w/ library shapes like cube and
 and not with what we defined below (like rectangle)
 */
 
-//NEW SHAPES
-
 class Walk extends Shape {
     constructor() {
         super("position", "normal",);
@@ -477,7 +475,8 @@ export class BruinRun extends Base_Scene {
 
         const bg_map_color = hex_color("#e2d8c9");
         const person_marker = hex_color("#ff0000"); 
-        const cone_color = hex_color("#ff0000");
+        let cone_color = hex_color("#ff0000");
+        let cone_color2 = hex_color("#ff0000");
         const starship_color = hex_color("#fff8e7");
         const flyer_person_color = hex_color("#59d1dc");
 
@@ -509,13 +508,19 @@ export class BruinRun extends Base_Scene {
         let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
         this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
         
+
         // draw barrier 
+        if(this.scene == 3){
+            cone_color = hex_color("#ffffff");
+            cone_color2 = hex_color("#030303");
+        }
         let cone_transform = map_transform.times(Mat4.translation(0, 0.9, 1)).times(Mat4.scale(0.075, 0.05, 0.1)); 
-        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(3, 0, 0)), this.materials.plastic.override({color: cone_color})); 
-        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(6, 0, 0)), this.materials.plastic.override({color: cone_color}));
-        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(9, 0, 0)), this.materials.plastic.override({color: cone_color}));
-        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(12, 0, 0)), this.materials.plastic.override({color: cone_color}));
         this.shapes.map.draw(context, program_state, cone_transform, this.materials.plastic.override({color: cone_color}));
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(3, 0, 0)), this.materials.plastic.override({color: cone_color2})); 
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(6, 0, 0)), this.materials.plastic.override({color: cone_color}));
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(9, 0, 0)), this.materials.plastic.override({color: cone_color2}));
+        this.shapes.map.draw(context, program_state, cone_transform.times(Mat4.translation(12, 0, 0)), this.materials.plastic.override({color: cone_color}));
+
         // draw base map 
         map_transform = map_transform.times(Mat4.scale(0.8, 1, 0.8));
         this.shapes.map.draw(context, program_state, map_transform, this.materials.plastic.override( {color: bg_map_color}));
@@ -599,7 +604,6 @@ export class BruinRun extends Base_Scene {
     draw_walkway(context, program_state, walkway_transform) {
 
         walkway_transform = walkway_transform.times(Mat4.scale(2, 0.2, 1)).times(Mat4.translation(0,6, 0));
-
         // Draw walkway 
         this.shapes.ground.draw(context, program_state, walkway_transform.times(this.walkway_path_transform), this.materials.bump);
         // Draw sky background
@@ -714,9 +718,10 @@ export class BruinRun extends Base_Scene {
         if(this.running){
             this.runDist +=1; 
             // translate sky and person
-            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.2));
-                this.person_z = this.person_transform[2][3];
-                this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-.2));
+            // try new speed -0.2 -> -0.4
+            this.person_transform = this.person_transform.times(Mat4.translation(0, 0, -0.3));
+            this.person_z = this.person_transform[2][3];
+            this.sky_transform = this.sky_transform.times(Mat4.translation(0,0,-0.3));
         }
 
         // Walking Animation Parameters
@@ -1473,7 +1478,6 @@ export class BruinRun extends Base_Scene {
             }
         }
 
-
         let bench_pos = Mat4.translation(-15,3,5);
         for (let i = 0; i < 4; i++) {
             if (bench_pos[2][3] < this.person_z +10) {
@@ -1739,9 +1743,6 @@ export class BruinRun extends Base_Scene {
                 }
                 this.draw_enemies(context, program_state, t);
                 this.draw_scene_ack(context, program_state, move_scene);
-
-                // testing out new flyerperson
-                this.draw_flyerperson2_left(context, program_state, Mat4.identity().times(Mat4.translation(-10, 10, -10)));
 
                 //add barricade
                 let poster_trans = Mat4.translation(6,3.8,-65).times(Mat4.rotation(Math.PI/2.5,1,0,0)).times(Mat4.scale(2,.1,2.5));
