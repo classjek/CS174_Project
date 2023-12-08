@@ -171,7 +171,7 @@ class Base_Scene extends Scene {
         this.flyer3_inc = 0; 
 
         // for randomization of flyers
-        this.rando = Math.floor(Math.random() * 5) + 1;
+        this.rando = Math.floor(Math.random() * 6) + 1;
 
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
@@ -280,7 +280,6 @@ class Base_Scene extends Scene {
             flyer_torso: new Material(new defs.Textured_Phong(), 
                 {   ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/side eye dog.png", "NEAREST")}),
-
             flyer1: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/Flyer1.jpg", "NEAREST")}),
@@ -296,9 +295,15 @@ class Base_Scene extends Scene {
             flyer5: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/Flyer5.jpg", "NEAREST")}),
+            flyer6: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer6.jpg", "NEAREST")}),
             bump: new Material(new defs.Fake_Bump_Map(),
                 {   ambient: 1, diffusivity: 0.1, color: hex_color("#000000"),
                     texture: new Texture("assets/Asphalt.png")}),
+            starship_icon: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/starship_map.png", "NEAREST")}),
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -486,8 +491,11 @@ export class BruinRun extends Base_Scene {
             case 4:
                 this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer4);
                 break;
-            default:
+            case 5:
                 this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer5);
+                break;
+            default:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer6);
                 break;
         }
 
@@ -524,8 +532,9 @@ export class BruinRun extends Base_Scene {
             let move_x = (value+4)/16; 
             let starship_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             //let star_transform = map_transform.times(Mat4.translation(mval + 0.8, mkey, 1)).times(Mat4.scale(0.1, 0.075, 0.2));
-            let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
-            this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
+            let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.05, 0.1));
+            //this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
+            this.shapes.map.draw(context, program_state, starship_transform, this.materials.starship_icon);
         }
         // Draw Flyerpersons
         for (const [key, value] of this.flyerperson_location.entries()){
@@ -533,13 +542,14 @@ export class BruinRun extends Base_Scene {
             let move_x = (value + 4)/16; 
             let flyer_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             let flyer_transform = map_transform.times(flyer_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
-            this.shapes.map.draw(context, program_state, flyer_transform, this.materials.plastic.override({color: flyer_person_color}));
+            this.shapes.map.draw(context, program_state, flyer_transform, this.materials.flyer_head);
         }
 
 
         //draw person 
         let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
-        this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
+        //this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
+        this.shapes.map.draw(context, program_state, marker_transform, this.materials.character_torso);
         
 
         // draw barrier 
@@ -1670,6 +1680,11 @@ export class BruinRun extends Base_Scene {
                 case 3: // starship 
                     location = Math.floor(Math.random()*6) + 1;
                     break;
+                case 4:
+                    location = Math.floor(Math.random()*6) + 1;
+                    break;
+                default:
+                    break;
             }
             this.enemies.push([enemy, location]);
         }
@@ -1708,6 +1723,13 @@ export class BruinRun extends Base_Scene {
             }
             else if (this.enemies[i][0] === 3) // starship
             { 
+                let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
+                let translation = Mat4.translation(bot_motion, 0, z).times(Mat4.translation(0, 0, -1 * enemies_trans));
+                if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                    translation = translation.times(this.bot_transform);
+                    this.draw_starship(context, program_state, translation);
+                }
+            } else if (this.enemies[i][0] === 4){
                 let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
                 let translation = Mat4.translation(bot_motion, 0, z).times(Mat4.translation(0, 0, -1 * enemies_trans));
                 if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
