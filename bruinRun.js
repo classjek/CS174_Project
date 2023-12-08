@@ -1646,16 +1646,23 @@ export class BruinRun extends Base_Scene {
         {
             let z = -1 * i * this.spacing;
 
-            if (this.enemies[i][0] === 1){ // walking flyerperson
-                let flyerperson_motion = 2 * Math.sin(Math.PI * t);
-                // x moves the person along the z axis, and z moves along the x axis (idk why)
-                // +x -> further away, -x -> closer (reverse of the other two z-axis)
-                let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1])
-                    .times(Mat4.translation(enemies_trans, 0, 0))
-                    .times(this.flyerperson_transform);
-                this.draw_flyerperson(context, program_state, translation);
-            } 
-            else if (this.enemies[i][0] === 2){ // stationary flyerperson
+            // if (this.enemies[i][0] === 1){ // walking flyerperson
+            //     let flyerperson_motion = 2 * Math.sin(Math.PI * t);
+            //     // x moves the person along the z axis, and z moves along the x axis (idk why)
+            //     // +x -> further away, -x -> closer (reverse of the other two z-axis)
+            //     let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1])
+            //         .times(Mat4.translation(enemies_trans, 0, 0))
+            //         .times(this.flyerperson_transform);
+            //     this.draw_flyerperson(context, program_state, translation);
+            // } 
+            if (this.enemies[i][0] === 1) {
+                let translation = Mat4.translation(-24, 0, z - 10).times(Mat4.translation(0, 0, -1 * enemies_trans));
+                if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                    translation = translation.times(this.flyerperson_transform);
+                    this.draw_flyerperson2_left(context, program_state, translation);
+                }
+            }
+            if (this.enemies[i][0] === 2){ // stationary flyerperson
                 let translation = Mat4.translation(0, 0, z - 10).times(Mat4.translation(0, 0, -1 * enemies_trans));
                 if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
                     translation = translation.times(this.flyerperson_transform);
@@ -1679,7 +1686,7 @@ export class BruinRun extends Base_Scene {
         super.display(context, program_state);
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-        this.start_game = true;
+        //this.start_game = true;
         if(!this.start_game)
         {
             const initial_camera_position = Mat4.translation(0, 0, -30);
