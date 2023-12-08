@@ -223,6 +223,9 @@ class Base_Scene extends Scene {
             ack_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/ackerman.jpg", "NEAREST")}),
+            end_texture: new Material(new defs.Textured_Phong(),
+                {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
+                texture: new Texture("assets/end_wall.jpg", "NEAREST")}),
             kerck_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/kerck.jpg", "NEAREST")}),
@@ -1627,7 +1630,6 @@ export class BruinRun extends Base_Scene {
                     break;
                 case 2: // stationary flyerperson
                     location = 0; // not used later on
-                    console.log('flyerperson2 yo');
                     break;
                 // set case 3 as the default case 
                 case 3: // starship 
@@ -1686,7 +1688,7 @@ export class BruinRun extends Base_Scene {
         super.display(context, program_state);
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-        //this.start_game = true;
+        this.start_game = true;
         if(!this.start_game)
         {
             const initial_camera_position = Mat4.translation(0, 0, -30);
@@ -1748,6 +1750,7 @@ export class BruinRun extends Base_Scene {
                     poster_trans = poster_trans.times(Mat4.translation(-2.4,0,0));
                     this.shapes.cube.draw(context, program_state, poster_trans, this.materials.plastic.override( {color: hex_color("#ff0000")}))
                 }
+
             }
             else if (this.person_z < -60 && this.person_z > -62) { // Between Scenes 
                 this.new_scene = true;
@@ -1796,6 +1799,42 @@ export class BruinRun extends Base_Scene {
                 this.draw_enemies(context, program_state, t, 135);
 
                 this.draw_scene_janss(context, program_state, move_scene);
+
+                let wall_trans = Mat4.translation(-8,10,-205).times(Mat4.scale(10,10,1));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(0,2,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+
+                wall_trans = wall_trans.times(Mat4.translation(0,2,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+
+
+                
+                let door_1 = Mat4.translation(1,6,-63).times(Mat4.scale(3,10,.5))
+                this.shapes.cube.draw(context, program_state, door_1, this.materials.plastic.override( {color: hex_color("#00ff00")}))
+                door_1 = door_1.times(Mat4.translation(-2.1,0,0));
+                this.shapes.cube.draw(context, program_state, door_1, this.materials.plastic.override( {color: hex_color("#00ff00")}))
+
             }
             else{
                 //END GAME
