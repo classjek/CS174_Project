@@ -61,6 +61,38 @@ class Flyer extends Shape {
     }
 }
 
+class Head extends Shape{
+    constructor() {
+        super("position", "normal",);
+            // Define vertices for a nearly flat cube (thick square)
+            this.arrays.position = Vector3.cast(
+                // Front face
+                [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1],
+                // Back face
+                [-1, -1, -1], [1, -1, -1], [-1, 1, -1], [1, 1, -1]
+            );
+            this.arrays.normal = Vector3.cast(
+                // Normals for each face
+                [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], // Front face
+                [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1]  // Back face
+            );
+            this.arrays.texture_coord = Vector3.cast(
+                // Front and Back faces
+                [0, 0], [1, 0], [0, 1], [1, 1], // Repeated for both front and back faces
+                [0, 0], [1, 0], [0, 1], [1, 1]
+            );
+            // Define indices for the nearly flat cube
+            this.indices.push(
+                0, 1, 2, 1, 3, 2, // Front face
+                4, 6, 5, 5, 6, 7, // Back face
+                0, 2, 4, 2, 6, 4, // Left face
+                1, 5, 3, 3, 5, 7, // Right face
+                2, 3, 6, 3, 7, 6, // Top face
+                0, 4, 1, 1, 4, 5  // Bottom face
+            );
+    }
+}
+
 class Trapezoid extends Shape {
     constructor() {
         super("position", "normal",);
@@ -191,6 +223,7 @@ class Base_Scene extends Scene {
             'bot': new defs.Rounded_Capped_Cylinder(35,35),
             'flyer': new Flyer(),
             'map': new Flyer(),
+            'head': new Head(),
         };
 
         this.shapes.ground.arrays.texture_coord.forEach(coord => {
@@ -1009,9 +1042,9 @@ export class BruinRun extends Base_Scene {
        // if turned, add texture to face, eventually change this texture to something funny
        if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
             // this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+            this.shapes.head.draw(context, program_state, person.head_transform, this.materials.flyer_head);
        } else {
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+            this.shapes.head.draw(context, program_state, person.head_transform, this.materials.flyer_head);
        }
 
        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
@@ -1141,9 +1174,9 @@ export class BruinRun extends Base_Scene {
        // if turned, add texture to face, eventually change this texture to something funny
        if(this.flyerperson_info.has(key) && this.flyerperson_info.get(key).turned == true){
             // this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.gene);
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+            this.shapes.head.draw(context, program_state, person.head_transform, this.materials.flyer_head);
        } else {
-            this.shapes.cube.draw(context, program_state, person.head_transform, this.materials.flyer_head);
+            this.shapes.head.draw(context, program_state, person.head_transform, this.materials.flyer_head);
        }
 
        //this.shapes.cube.draw(context, program_state, temp_trans.times(person.head_transform), this.materials.plastic.override(white));
