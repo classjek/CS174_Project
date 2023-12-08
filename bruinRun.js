@@ -1647,6 +1647,11 @@ export class BruinRun extends Base_Scene {
                 case 3: // starship 
                     location = Math.floor(Math.random()*6) + 1;
                     break;
+                case 4:
+                    location = Math.floor(Math.random()*6) + 1;
+                    break;
+                default:
+                    break;
             }
             this.enemies.push([enemy, location]);
         }
@@ -1685,6 +1690,13 @@ export class BruinRun extends Base_Scene {
             }
             else if (this.enemies[i][0] === 3) // starship
             { 
+                let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
+                let translation = Mat4.translation(bot_motion, 0, z).times(Mat4.translation(0, 0, -1 * enemies_trans));
+                if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
+                    translation = translation.times(this.bot_transform);
+                    this.draw_starship(context, program_state, translation);
+                }
+            } else if (this.enemies[i][0] === 4){
                 let bot_motion = 6.5 * Math.sin(Math.PI / 3 * t + this.enemies[i][1]);
                 let translation = Mat4.translation(bot_motion, 0, z).times(Mat4.translation(0, 0, -1 * enemies_trans));
                 if (this.bot_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
