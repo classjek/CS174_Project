@@ -247,7 +247,6 @@ class Base_Scene extends Scene {
             flyer_torso: new Material(new defs.Textured_Phong(), 
                 {   ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/side eye dog.png", "NEAREST")}),
-
             flyer1: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/Flyer1.jpg", "NEAREST")}),
@@ -266,6 +265,9 @@ class Base_Scene extends Scene {
             bump: new Material(new defs.Fake_Bump_Map(),
                 {   ambient: 1, diffusivity: 0.1, color: hex_color("#000000"),
                     texture: new Texture("assets/Asphalt.png")}),
+            starship_icon: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/starship_map.png", "NEAREST")}),
         };
         // The white material and basic shader are used for drawing the outline.
     }
@@ -491,8 +493,9 @@ export class BruinRun extends Base_Scene {
             let move_x = (value+4)/16; 
             let starship_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             //let star_transform = map_transform.times(Mat4.translation(mval + 0.8, mkey, 1)).times(Mat4.scale(0.1, 0.075, 0.2));
-            let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
-            this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
+            let starship_transform = map_transform.times(starship_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.05, 0.1));
+            //this.shapes.map.draw(context, program_state, starship_transform, this.materials.plastic.override({color: starship_color}));
+            this.shapes.map.draw(context, program_state, starship_transform, this.materials.starship_icon);
         }
         // Draw Flyerpersons
         for (const [key, value] of this.flyerperson_location.entries()){
@@ -500,13 +503,14 @@ export class BruinRun extends Base_Scene {
             let move_x = (value + 4)/16; 
             let flyer_move = Mat4.identity().times(Mat4.translation(move_x, move_y, 0));
             let flyer_transform = map_transform.times(flyer_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
-            this.shapes.map.draw(context, program_state, flyer_transform, this.materials.plastic.override({color: flyer_person_color}));
+            this.shapes.map.draw(context, program_state, flyer_transform, this.materials.flyer_head);
         }
 
 
         //draw person 
         let marker_transform = map_transform.times(marker_move).times(Mat4.translation(0.5, -0.5, 1)).times(Mat4.scale(0.1, 0.1, 0.1));
-        this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
+        //this.shapes.map.draw(context, program_state, marker_transform, this.materials.plastic.override( {color: person_marker}));
+        this.shapes.map.draw(context, program_state, marker_transform, this.materials.character_torso);
         
 
         // draw barrier 
