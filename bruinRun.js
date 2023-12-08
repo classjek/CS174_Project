@@ -139,7 +139,7 @@ class Base_Scene extends Scene {
         this.flyer3_inc = 0; 
 
         // for randomization of flyers
-        this.rando = Math.floor(Math.random() * 5) + 1;
+        this.rando = Math.floor(Math.random() * 6) + 1;
 
         // Event listeners for x and z movement
         document.addEventListener('keydown', (event) => {
@@ -262,6 +262,9 @@ class Base_Scene extends Scene {
             flyer5: new Material(new defs.Textured_Phong(),
                     {ambient: 1, diffusivity: .1, specularity: 0.1,
                     texture: new Texture("assets/Flyer5.jpg", "NEAREST")}),
+            flyer6: new Material(new defs.Textured_Phong(),
+                    {ambient: 1, diffusivity: .1, specularity: 0.1,
+                    texture: new Texture("assets/Flyer6.jpg", "NEAREST")}),
             bump: new Material(new defs.Fake_Bump_Map(),
                 {   ambient: 1, diffusivity: 0.1, color: hex_color("#000000"),
                     texture: new Texture("assets/Asphalt.png")}),
@@ -455,8 +458,11 @@ export class BruinRun extends Base_Scene {
             case 4:
                 this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer4);
                 break;
-            default:
+            case 5:
                 this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer5);
+                break;
+            default:
+                this.shapes.flyer.draw(context, program_state, flyer_transform.times(Mat4.scale(this.flyer_size, this.flyer_size, this.flyer_size)), this.materials.flyer6);
                 break;
         }
 
