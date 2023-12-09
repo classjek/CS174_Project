@@ -10,7 +10,7 @@ Final project for UCLA CS174A Fall 2023
 # Installation Instructions and System Requirements
 
 # Development Team
-Jake Ekoniak
-Elizabeth Manka
-Osbert Sudjana
+Jake Ekoniak \
+Elizabeth Manka \
+Osbert Sudjana \
 Emma Lee
