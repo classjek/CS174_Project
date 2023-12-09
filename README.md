@@ -38,8 +38,6 @@ As mentioned earlier, the player has the ability to jump, [“space”], to avoi
 ### Bump Mapping:
 To make the scene more realistic, we implemented bump mapping on walkway that the player traverses. 
 
-# Installation Instructions and System Requirements
-
 # Development Team
 Jake Ekoniak \
 Elizabeth Manka \
