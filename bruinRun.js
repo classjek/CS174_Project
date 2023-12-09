@@ -187,12 +187,12 @@ class Base_Scene extends Scene {
             // if(event.key === 's'){
             //     this.moveBackward = true; 
             // }
-            if (event.key === 'Escape') {
-                this.detach_camera = true;
-            }
-            if (event.key === '1') {
-                this.detach_camera = false;
-            }
+            // if (event.key === 'Escape') {
+            //     this.detach_camera = true;
+            // }
+            // if (event.key === '1') {
+            //     this.detach_camera = false;
+            // }
         })
         document.addEventListener('keyup', (event)=> {
             if (event.key === 'd'){
@@ -257,6 +257,9 @@ class Base_Scene extends Scene {
             end_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/end_wall.jpg", "NEAREST")}),
+            wood_texture: new Material(new defs.Textured_Phong(),
+                {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
+                texture: new Texture("assets/wood.jpg", "NEAREST")}),
             kerck_texture: new Material(new defs.Textured_Phong(),
                 {ambient: 1, diffusivity: .1, color: hex_color("#000000"),
                 texture: new Texture("assets/kerck.jpg", "NEAREST")}),
@@ -423,12 +426,12 @@ export class BruinRun extends Base_Scene {
             this.running = true; 
         })
 
-        this.key_triggered_button("Unlock Camera", ["Escape"], () =>{
-            this.detach_camera = true;
-        })
-        this.key_triggered_button("Lock Camera", ["1"], () =>{
-            this.detach_camera = false;
-        })
+        // this.key_triggered_button("Unlock Camera", ["Escape"], () =>{
+        //     this.detach_camera = true;
+        // })
+        // this.key_triggered_button("Lock Camera", ["1"], () =>{
+        //     this.detach_camera = false;
+        // })
         this.key_triggered_button("Start Game", ["Enter"], () =>{
             this.start_game = true; 
         })
@@ -1699,15 +1702,6 @@ export class BruinRun extends Base_Scene {
         {
             let z = -1 * i * this.spacing;
 
-            // if (this.enemies[i][0] === 1){ // walking flyerperson
-            //     let flyerperson_motion = 2 * Math.sin(Math.PI * t);
-            //     // x moves the person along the z axis, and z moves along the x axis (idk why)
-            //     // +x -> further away, -x -> closer (reverse of the other two z-axis)
-            //     let translation = Mat4.translation((-1 * z) - 5, 0, flyerperson_motion - this.enemies[i][1])
-            //         .times(Mat4.translation(enemies_trans, 0, 0))
-            //         .times(this.flyerperson_transform);
-            //     this.draw_flyerperson(context, program_state, translation);
-            // } 
             if (this.enemies[i][0] === 1) {
                 let translation = Mat4.translation(-24, 0, z - 10).times(Mat4.translation(0, 0, -1 * enemies_trans));
                 if (this.flyerperson_transform.times(translation)[2][3] < this.person_z + 10) { // Don't draw if behind person
@@ -1868,42 +1862,11 @@ export class BruinRun extends Base_Scene {
                 wall_trans = wall_trans.times(Mat4.translation(2,0,0));
                 this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
                 wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-
-
-                // let wall_trans = Mat4.translation(-8,10,-205).times(Mat4.scale(10,10,1));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(0,2,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-
-                // wall_trans = wall_trans.times(Mat4.translation(0,2,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-
-
                 
-                let door_1 = Mat4.translation(1,6,-63).times(Mat4.scale(3,10,.5))
-                this.shapes.cube.draw(context, program_state, door_1, this.materials.plastic.override( {color: hex_color("#00ff00")}))
+                let door_1 = Mat4.translation(1,6,-203).times(Mat4.scale(3,10,.5))
+                this.shapes.cube.draw(context, program_state, door_1, this.materials.wood_texture)
                 door_1 = door_1.times(Mat4.translation(-2.1,0,0));
-                this.shapes.cube.draw(context, program_state, door_1, this.materials.plastic.override( {color: hex_color("#00ff00")}))
+                this.shapes.cube.draw(context, program_state, door_1, this.materials.wood_texture)
 
             }
             else{
