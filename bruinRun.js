@@ -1654,6 +1654,7 @@ export class BruinRun extends Base_Scene {
         // reset the enemy maps here 
         this.starship_locations.clear(); 
         this.flyerperson_info.clear(); 
+        this.flyerperson_location.clear(); 
 
         // all the scenes are basically the smae length so this isn't necessary 
         // but something is working because they don't seem to collide w the tables 
