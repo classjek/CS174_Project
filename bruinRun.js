@@ -1745,7 +1745,7 @@ export class BruinRun extends Base_Scene {
         super.display(context, program_state);
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-        this.start_game = true;
+        //this.start_game = true;
         if(!this.start_game)
         {
             const initial_camera_position = Mat4.translation(0, 0, -30);
@@ -1858,29 +1858,44 @@ export class BruinRun extends Base_Scene {
                 this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
                 wall_trans = wall_trans.times(Mat4.translation(2,0,0));
                 this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(0,2,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
                 wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
                 this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+
 
                 wall_trans = wall_trans.times(Mat4.translation(0,2,0));
                 this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
                 wall_trans = wall_trans.times(Mat4.translation(2,0,0));
                 this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
                 wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
-                wall_trans = wall_trans.times(Mat4.translation(2,0,0));
-                this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+
+
+                // let wall_trans = Mat4.translation(-8,10,-205).times(Mat4.scale(10,10,1));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(0,2,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(-2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+
+                // wall_trans = wall_trans.times(Mat4.translation(0,2,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
+                // wall_trans = wall_trans.times(Mat4.translation(2,0,0));
+                // this.shapes.cube.draw(context, program_state, wall_trans, this.materials.end_texture)
 
 
                 
